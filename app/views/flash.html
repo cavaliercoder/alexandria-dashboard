@@ -1,18 +1,28 @@
 {{if .flash.success}}
-<div class="alert alert-success">
-	{{.flash.success}}
+<div class="row">
+    <div class="col-lg-12">
+        <div class="alert alert-success alert-dismissable">
+            <button aria-hidden="true" data-dismiss="alert" class="close" type="button">×</button>
+            {{.flash.success}}
+        </div>
+    </div>
 </div>
 {{end}}
 
 {{if or .errors .flash.error}}
-<div class="alert alert-error">
-	{{if .flash.error}}
-		{{.flash.error}}
-	{{end}}
-	<ul style="margin-top:10px;">
-		{{range .errors}}
-			<li>{{.}}</li>
-		{{end}}
-	</ul>
+<div class="row">
+    <div class="col-lg-12">
+        <div class="alert alert-danger alert-dismissable">
+            <button aria-hidden="true" data-dismiss="alert" class="close" type="button">×</button>
+            {{if .flash.error}}
+				{{.flash.error}}
+			{{end}}
+			<ul style="margin-top:10px;">
+				{{range .errors}}
+					<li>{{.}}</li>
+				{{end}}
+			</ul>
+        </div>
+    </div>
 </div>
 {{end}}
