@@ -30,6 +30,7 @@ import (
 
 type Controller struct {
 	*revel.Controller
+	userContext *UserContext
 }
 
 func (c Controller) Check(err error) {
@@ -84,6 +85,26 @@ func (c Controller) ApiGet(path string) (*http.Response, error) {
 	return c.ApiRequest("GET", path, nil)
 }
 
+func (c Controller) ApiGetBind(path string, v interface{}) error {
+	res, err := c.ApiRequest("GET", path, nil)
+	if err != nil {
+		return err
+	}
+
+	if res.Body == nil {
+		return errors.New("Response body is empty")
+	}
+
+	defer res.Body.Close()
+
+	err = json.NewDecoder(res.Body).Decode(v)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (c Controller) ApiPost(path string, body interface{}) (*http.Response, error) {
 	b, err := json.Marshal(body)
 	if err != nil {
@@ -94,6 +115,7 @@ func (c Controller) ApiPost(path string, body interface{}) (*http.Response, erro
 	return c.ApiRequest("POST", path, reader)
 }
 
+// Bind decodes the body of a HTTP response into the specified interface
 func (c Controller) Bind(res *http.Response, v interface{}) error {
 	if res.Body == nil {
 		return errors.New("Response body is empty")
@@ -111,4 +133,35 @@ func (c Controller) Bind(res *http.Response, v interface{}) error {
 	}
 
 	return nil
+}
+
+func (c Controller) UserContext() *UserContext {
+	if c.Session["apiKey"] == "" {
+		c.userContext = nil
+		return nil
+	}
+
+	if c.userContext == nil {
+		// fetch user details
+		var user UserModel
+		err := c.ApiGetBind("/users/current", &user)
+		c.Check(err)
+
+		// fetch tenant details
+		var tenant TenantModel
+		err = c.ApiGetBind("/tenants/current", &tenant)
+		c.Check(err)
+
+		// fetch available cmdbs
+		var cmdbs []CmdbModel
+		err = c.ApiGetBind("/cmdbs", &cmdbs)
+		c.Check(err)
+
+		c.userContext = &UserContext{
+			User:   user,
+			Tenant: tenant,
+			Cmdbs:  cmdbs,
+		}
+	}
+	return c.userContext
 }

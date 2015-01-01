@@ -19,7 +19,6 @@ package controllers
 
 import (
 	"errors"
-	"github.com/cavaliercoder/alexandria-dashboard/app"
 	"github.com/revel/revel"
 	"net/http"
 )
@@ -77,21 +76,8 @@ func (c App) ValidateLogin(username string, password string) revel.Result {
 		c.Session["apiKey"] = apiKey
 
 		// Now that the apiKey is set, fetch the current user details
-		var user app.User
-		res, err = c.ApiRequest("GET", "/users/current", nil)
-		c.Check(err)
-
-		err = c.Bind(res, &user)
-		c.Check(err)
-		c.Flash.Success("Welcome %s!", user.FirstName)
-
-		// and fetch the tenant
-		var tenant app.Tenant
-		res, err = c.ApiRequest("GET", "/tenants/current", nil)
-		c.Check(err)
-
-		err = c.Bind(res, &tenant)
-		c.Check(err)
+		context := c.UserContext()
+		c.Flash.Success("Welcome %s!", context.User.FirstName)
 
 		// Great success
 		return c.Redirect(App.Index)

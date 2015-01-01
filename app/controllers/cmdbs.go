@@ -15,15 +15,16 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package app
+package controllers
 
-type User struct {
-	FirstName string `json:"firstName"`
-	LastName  string `json:"lastName"`
-	Email     string `json:"email"`
+import (
+	"github.com/revel/revel"
+)
+
+type Cmdbs struct {
+	Controller
 }
 
-type Tenant struct {
-	Code string `json:"code"`
-	Name string `json:"name"`
+func (c Cmdbs) Index() revel.Result {
+	return c.Render()
 }
