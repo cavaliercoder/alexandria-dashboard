@@ -40,19 +40,15 @@ func (c App) ValidateLogin(username string, password string) revel.Result {
 	var err error
 
 	// Validate form
-	if username == "" {
-		c.Flash.Error("Please specify a valid username")
-		return c.Redirect(App.Login)
-	}
-
-	if password == "" {
-		c.Flash.Error("Please specify a valid password")
+	c.Validation.Required(username)
+	c.Validation.Required(password)
+	if c.Validation.HasErrors() {
+		c.Validation.Keep()
+		c.FlashParams()
 		return c.Redirect(App.Login)
 	}
 
 	// Request API Key using username and password
-	//body := strings.NewReader(fmt.Sprintf(`{"username":"%s","password":"%s"}`, username, password))
-	//res, err := c.ApiRequest("POST", "/apikey", body)
 	body := map[string]string{
 		"username": username,
 		"password": password,
