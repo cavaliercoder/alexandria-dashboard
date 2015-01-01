@@ -19,11 +19,9 @@ package controllers
 
 import (
 	"errors"
-	"fmt"
 	"github.com/cavaliercoder/alexandria-dashboard/app"
 	"github.com/revel/revel"
 	"net/http"
-	"strings"
 )
 
 type App struct {
@@ -42,17 +40,32 @@ func (c App) ValidateLogin(username string, password string) revel.Result {
 	// TODO: Antiforgery token
 	var err error
 
+	// Validate form
+	if username == "" {
+		c.Flash.Error("Please specify a valid username")
+		return c.Redirect(App.Login)
+	}
+
+	if password == "" {
+		c.Flash.Error("Please specify a valid password")
+		return c.Redirect(App.Login)
+	}
+
 	// Request API Key using username and password
-	body := strings.NewReader(fmt.Sprintf(`{"username":"%s","password":"%s"}`, username, password))
-	res, err := c.ApiRequest("POST", "/apikey", body)
+	//body := strings.NewReader(fmt.Sprintf(`{"username":"%s","password":"%s"}`, username, password))
+	//res, err := c.ApiRequest("POST", "/apikey", body)
+	body := map[string]string{
+		"username": username,
+		"password": password,
+	}
+	res, err := c.ApiPost("/apikey", body)
 	c.Check(err)
 
 	// Parse the response
 	switch res.StatusCode {
 	case http.StatusUnauthorized:
-		c.Response.Status = http.StatusUnauthorized
 		c.Flash.Error("The credentials you provided do not appear valid")
-		return c.RenderTemplate("app/Login.html")
+		return c.Redirect(App.Login)
 
 	case http.StatusOK:
 		// Parse the apiKey

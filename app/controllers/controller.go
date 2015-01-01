@@ -72,7 +72,26 @@ func (c Controller) ApiRequest(method string, path string, body io.Reader) (*htt
 
 	// Submit the request
 	res, err := client.Do(req)
+
+	if res == nil {
+		panic("An error occurred communicating with backend services")
+	}
+
 	return res, err
+}
+
+func (c Controller) ApiGet(path string) (*http.Response, error) {
+	return c.ApiRequest("GET", path, nil)
+}
+
+func (c Controller) ApiPost(path string, body interface{}) (*http.Response, error) {
+	b, err := json.Marshal(body)
+	if err != nil {
+		log.Panicf("Failed to encode request body for API request to URL: %s", path)
+	}
+
+	reader := strings.NewReader(string(b))
+	return c.ApiRequest("POST", path, reader)
 }
 
 func (c Controller) Bind(res *http.Response, v interface{}) error {
