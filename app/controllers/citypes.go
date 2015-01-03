@@ -27,9 +27,11 @@ type CITypes struct {
 	Controller
 }
 
-func (c CITypes) Index() revel.Result {
+func (c CITypes) Index(id string) revel.Result {
 	cmdb := c.GetContextCmdb()
-	var citypes []CIType
+
+	// Get CI Types
+	var citypes []CITypeModel
 	status, err := c.ApiGetBind(true, fmt.Sprintf("/cmdbs/%s/citypes", cmdb.Name), &citypes)
 	c.Check(err)
 
@@ -38,11 +40,31 @@ func (c CITypes) Index() revel.Result {
 	}
 
 	c.RenderArgs["citypes"] = citypes
+
+	// Get selected CI Type
+	if id == "" {
+		if 0 < len(citypes) {
+			c.RenderArgs["citype"] = &citypes[0]
+		}
+	} else {
+		found := false
+		for _, citype := range citypes {
+			if citype.Name == id {
+				c.RenderArgs["citype"] = &citype
+				found = true
+				break
+			}
+		}
+
+		if !found {
+			return c.NotFound("No such CI Type: %s", id)
+		}
+	}
 	return c.Render()
 }
 
 func (c CITypes) ProcessNew() revel.Result {
-	var citype CIType
+	var citype CITypeModel
 	citype.Name = c.Params.Get("name")
 	citype.Description = c.Params.Get("description")
 
@@ -61,7 +83,7 @@ func (c CITypes) ProcessNew() revel.Result {
 	switch res.StatusCode {
 	case http.StatusCreated:
 		c.Flash.Success("Created %s", citype.Name)
-		return c.Redirect("/cmdb/%s/citypes", cmdb.Name)
+		return c.Redirect("/cmdb/%s/citypes/%s", cmdb.Name, citype.Name)
 
 	case http.StatusConflict:
 		c.Flash.Error("CI type '%s' already exists", citype.Name)

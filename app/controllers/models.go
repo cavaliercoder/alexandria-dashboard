@@ -49,15 +49,15 @@ type CmdbModel struct {
 	Description string `json:"description"`
 }
 
-type CIType struct {
+type CITypeModel struct {
 	Name        string `json:"name"`
 	Description string `json:"description"`
 	InheritFrom string `json:"inheritFrom"`
 }
 
-type CITypeAttribute struct {
-	Name        string            `json:"name"`
-	Description string            `json:"name"`
-	Type        string            `json:"type"`
-	Children    []CITypeAttribute `json:"children"`
+type CITypeAttributeModel struct {
+	Name        string                 `json:"name"`
+	Description string                 `json:"name"`
+	Type        string                 `json:"type"`
+	Children    []CITypeAttributeModel `json:"children"`
 }

@@ -29,6 +29,7 @@ GET     /cmdb/:cmdb                             Cmdbs.Get
 
 GET     /cmdb/:cmdb/citypes                     CITypes.Index
 POST    /cmdb/:cmdb/citypes                     CITypes.ProcessNew
+GET     /cmdb/:cmdb/citypes/:id                 CITypes.Index
 
 # Catch all
 # GET     /:controller/:action                    :controller.:action
