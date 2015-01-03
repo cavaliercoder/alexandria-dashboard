@@ -105,10 +105,7 @@ func (c Auth) ProcessRegistration() revel.Result {
 	switch res.StatusCode {
 	case http.StatusCreated:
 		// Log the new user in
-		c.ValidateLogin(user.Email, user.Password)
-
-		// Redirect to create a new CMDB
-		return c.Redirect(Cmdbs.New)
+		return c.ValidateLogin(user.Email, user.Password)
 
 	case http.StatusConflict:
 		c.Flash.Error(fmt.Sprintf("An account is already registered for %s", user.Email))
@@ -166,8 +163,12 @@ func (c Auth) ValidateLogin(username string, password string) revel.Result {
 		context := c.AuthContext()
 		c.Flash.Success("Welcome %s!", context.User.DisplayName())
 
-		// Great success
-		return c.Redirect(App.Index)
+		// Great success. Where should we redirect to?
+		if len(context.Cmdbs) == 0 {
+			return c.Redirect(Cmdbs.New)
+		} else {
+			return c.Redirect(App.Index)
+		}
 	default:
 		// TODO: Forward unknown errors
 		return c.RenderError(errors.New("Uh-oh! Basghetti Oooooh!"))
