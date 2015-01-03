@@ -30,7 +30,7 @@ import (
 
 type Controller struct {
 	*revel.Controller
-	userContext *UserContext
+	authContext *AuthContext
 }
 
 func (c Controller) Check(err error) {
@@ -43,7 +43,7 @@ func (c Controller) ApiRequest(method string, path string, body io.Reader) (*htt
 	// TODO: Add configurable API url
 	url := fmt.Sprintf("http://localhost:3000/api/v1%s", path)
 	method = strings.ToUpper(method)
-	apiKey := c.Session["apiKey"]
+	apiKey := c.Session["token"]
 
 	// Create a HTTP client that does not follow redirects
 	// This allows 'Location' headers to be read
@@ -135,13 +135,14 @@ func (c Controller) Bind(res *http.Response, v interface{}) error {
 	return nil
 }
 
-func (c Controller) UserContext() *UserContext {
-	if c.Session["apiKey"] == "" {
-		c.userContext = nil
+func (c Controller) AuthContext() *AuthContext {
+	// Check for the auth key in the session cookie
+	if c.Session["token"] == "" {
+		c.authContext = nil
 		return nil
 	}
 
-	if c.userContext == nil {
+	if c.authContext == nil {
 		// fetch user details
 		var user UserModel
 		err := c.ApiGetBind("/users/current", &user)
@@ -157,11 +158,28 @@ func (c Controller) UserContext() *UserContext {
 		err = c.ApiGetBind("/cmdbs", &cmdbs)
 		c.Check(err)
 
-		c.userContext = &UserContext{
+		c.authContext = &AuthContext{
 			User:   user,
 			Tenant: tenant,
 			Cmdbs:  cmdbs,
 		}
 	}
-	return c.userContext
+
+	return c.authContext
+}
+
+func (c Controller) CheckLogin() revel.Result {
+	// Check if auth token is set
+	if c.Session["token"] == "" {
+		// Scrub cookie
+		for k := range c.Session {
+			delete(c.Session, k)
+		}
+
+		// redirect to login
+		c.Flash.Error("Please log in first")
+		return c.Redirect(Auth.Login)
+	}
+
+	return nil
 }

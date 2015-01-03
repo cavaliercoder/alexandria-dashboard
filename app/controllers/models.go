@@ -17,7 +17,7 @@
  */
 package controllers
 
-type UserContext struct {
+type AuthContext struct {
 	User   UserModel
 	Tenant TenantModel
 	Cmdbs  []CmdbModel
