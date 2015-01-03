@@ -1,17 +1,16 @@
 <div class="collapse navbar-collapse navbar-ex1-collapse">
     <ul class="nav navbar-nav side-nav">
         <li class="active">
-            <a href="index.html"><i class="fa fa-fw fa-dashboard"></i> Dashboard</a>
+            <a href="/"><i class="fa fa-fw fa-dashboard"></i> Dashboard</a>
         </li>
 
         <li>
-            <a href="javascript:;" data-toggle="collapse" data-target="#demo"><i class="fa fa-fw fa-table"></i> CMDBS <i class="fa fa-fw fa-caret-down"></i></a>
-            <ul id="demo" class="collapse">
-
-                <li>
-                    <a href="/cmdbs/new">New CMDB</a>
-                </li>
-            </ul>
+            <a href="/cmdbs/new"><i class="fa fa-fw fa-plus"></i> New CMDB</a>
         </li>
+        {{range .AuthContext.Cmdbs}}
+        <li>
+            <a href="/cmdbs/{{.Name}}"><i class="fa fa-fw fa-th"></i> {{.Name}}</a>
+        </li>
+        {{end}}
     </ul>
 </div>
