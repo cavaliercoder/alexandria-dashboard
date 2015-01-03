@@ -21,5 +21,9 @@ GET     /logout                                 Auth.Logout
 GET     /register                               Auth.Register
 POST    /register                               Auth.ProcessRegistration
 
+GET		/cmdbs									Cmdbs.Index
+GET     /cmdbs/new                              Cmdbs.New
+POST    /cmdbs/new                              Cmdbs.ProcessNew
+
 # Catch all
 # GET     /:controller/:action                    :controller.:action

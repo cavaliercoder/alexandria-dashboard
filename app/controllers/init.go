@@ -22,6 +22,7 @@ import "github.com/revel/revel"
 func init() {
 	// Enforce authentication for private controllers
 	revel.InterceptMethod(App.CheckLogin, revel.BEFORE)
+	revel.InterceptMethod(Cmdbs.CheckLogin, revel.BEFORE)
 
 	// Add common RenderArgs such as Application Name
 	revel.InterceptFunc(AddRenderArgs, revel.BEFORE, Controller{})

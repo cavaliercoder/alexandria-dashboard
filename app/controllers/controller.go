@@ -28,6 +28,8 @@ import (
 	"strings"
 )
 
+var ApiAuthError = errors.New("API Authentication error")
+
 type Controller struct {
 	*revel.Controller
 	authContext *AuthContext
@@ -96,10 +98,15 @@ func (c Controller) ApiRequest(impersonate bool, method string, path string, bod
 	res, err := client.Do(req)
 
 	if res == nil {
-		panic("An error occurred communicating with backend services")
+		revel.ERROR.Panic("An error occurred communicating with backend services")
 	}
 
-	revel.TRACE.Printf("Finished API request: %s", res.Status)
+	// Validate response
+	if res.StatusCode == http.StatusUnauthorized {
+		return res, ApiAuthError
+	}
+
+	revel.TRACE.Printf("Finished API request with: %s", res.Status)
 
 	return res, err
 }
@@ -173,7 +180,7 @@ func (c Controller) AuthContext() *AuthContext {
 		status, err := c.ApiGetBind(true, "/users/current", &user)
 		c.Check(err)
 		if status != http.StatusOK {
-			revel.ERROR.Panicf("Failed get current user from the API with: %s", status)
+			revel.ERROR.Panicf("Failed get current user from the API with: %d", status)
 		}
 
 		// fetch tenant details
@@ -181,7 +188,7 @@ func (c Controller) AuthContext() *AuthContext {
 		status, err = c.ApiGetBind(true, "/tenants/current", &tenant)
 		c.Check(err)
 		if status != http.StatusOK {
-			revel.ERROR.Panicf("Failed get current user tenancy from the API with: %s", status)
+			revel.ERROR.Panicf("Failed get current user tenancy from the API with: %d", status)
 		}
 
 		// fetch available cmdbs
@@ -189,7 +196,7 @@ func (c Controller) AuthContext() *AuthContext {
 		status, err = c.ApiGetBind(true, "/cmdbs", &cmdbs)
 		c.Check(err)
 		if status != http.StatusOK {
-			revel.ERROR.Panicf("Failed get a list of CMDBs from the API with: %s", status)
+			revel.ERROR.Panicf("Failed get a list of CMDBs from the API with: %d", status)
 		}
 
 		c.authContext = &AuthContext{

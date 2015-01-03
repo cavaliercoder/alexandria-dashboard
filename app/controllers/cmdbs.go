@@ -19,6 +19,8 @@ package controllers
 
 import (
 	"github.com/revel/revel"
+	"net/http"
+	"regexp"
 )
 
 type Cmdbs struct {
@@ -26,5 +28,47 @@ type Cmdbs struct {
 }
 
 func (c Cmdbs) Index() revel.Result {
+	authContext := c.AuthContext()
+
+	c.RenderArgs["cmdbs"] = authContext.Cmdbs
+
 	return c.Render()
+}
+
+func (c Cmdbs) New() revel.Result {
+	return c.Render()
+}
+
+func (c Cmdbs) ProcessNew() revel.Result {
+	var cmdb CmdbModel
+	cmdb.Name = c.Params.Get("name")
+	cmdb.Description = c.Params.Get("description")
+
+	// Validate params
+	c.Validation.Required(cmdb.Name)
+	c.Validation.Match(cmdb.Name, regexp.MustCompile("^[a-zA-Z0-9-_]+$"))
+	c.Validation.Required(cmdb.Description)
+	if c.Validation.HasErrors() {
+		c.Validation.Keep()
+		c.FlashParams()
+		return c.Redirect(Cmdbs.New)
+	}
+
+	// Create new CMDB
+	res, err := c.ApiPost(true, "/cmdbs", &cmdb)
+	c.Check(err)
+
+	// Parse the response
+	switch res.StatusCode {
+	case http.StatusCreated:
+		c.Flash.Success("Created CMDB: %s", cmdb.Name)
+		return c.Redirect(Cmdbs.Index)
+	case http.StatusConflict:
+		c.Flash.Error("A CMDB already exists with name '%s'", cmdb.Name)
+		return c.Redirect(Cmdbs.New)
+	default:
+		revel.ERROR.Panicf("Failed to create new CMDB with: %s", res.Status)
+	}
+
+	return c.Redirect(Cmdbs.Index)
 }

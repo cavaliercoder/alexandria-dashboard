@@ -105,7 +105,10 @@ func (c Auth) ProcessRegistration() revel.Result {
 	switch res.StatusCode {
 	case http.StatusCreated:
 		// Log the new user in
-		return c.ValidateLogin(user.Email, user.Password)
+		c.ValidateLogin(user.Email, user.Password)
+
+		// Redirect to create a new CMDB
+		return c.Redirect(Cmdbs.New)
 
 	case http.StatusConflict:
 		c.Flash.Error(fmt.Sprintf("An account is already registered for %s", user.Email))
@@ -151,6 +154,9 @@ func (c Auth) ValidateLogin(username string, password string) revel.Result {
 		err = c.Bind(res, &result)
 		c.Check(err)
 		apiKey := result["apiKey"]
+
+		// Reset any existing session
+		c.DestroySession()
 
 		// Store the auth token in the session cookie
 		c.Session["token"] = apiKey

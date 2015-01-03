@@ -1,0 +1,29 @@
+{{set . "title" "CMDBs"}}
+{{template "header.html" .}}
+
+<div class="row">
+    <div class="col-lg-6">
+        <div class="table-responsive">
+            <table class="table table-hover table-striped">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Description</th>
+                        <th>Objects</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {{range .cmdbs}}
+                    <tr>
+                        <td>{{.Name}}</td>
+                        <td>{{.Description}}</td>
+                        <td>&nbsp;</td>
+                    </tr>
+                {{end}}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{{template "footer.html" .}}

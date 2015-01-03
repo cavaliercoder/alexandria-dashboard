@@ -1,0 +1,29 @@
+{{set . "title" "New CMDB"}}
+{{template "header.html" .}}
+
+<div class="row">
+    <div class="col-lg-6">
+        <form role="form" method="POST">
+            <div class="form-group">
+                <label for="name">Name</label>
+                <input id="name" name="name" class="form-control" placeholder="My-CMDB"/>
+                <p class="help-block">A short name for your new CMDB.</p>
+            </div>
+            <div class="form-group">
+                <label for="description">Description</label>
+                <textarea id="description" name="description" class="form-control" rows="3"></textarea>
+                <p class="help-block">A descriptive summary of your CMDB.</p>
+            </div>
+
+			<div class="form-group">
+				<div class="pull-right">
+					<button class="btn btn-default" onclick="location.href='/cmdbs'">Cancel</button>
+					<button type="submit" class="btn btn-primary">Add</button>
+				</div>
+				<div class="clearfix"></div>
+			</div>
+        </form>
+    </div>
+</div>
+
+{{template "footer.html" .}}
