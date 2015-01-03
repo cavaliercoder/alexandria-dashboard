@@ -24,6 +24,7 @@ import (
 	"github.com/revel/revel"
 	"io"
 	"net/http"
+	"regexp"
 	"strings"
 )
 
@@ -38,15 +39,30 @@ func (c Controller) Check(err error) {
 	}
 }
 
-func (c Controller) ApiRequest(method string, path string, body io.Reader) (*http.Response, error) {
+func (c Controller) ApiRequest(impersonate bool, method string, path string, body io.Reader) (*http.Response, error) {
 	// TODO: Add configurable API url
 	baseUrl, ok := revel.Config.String("api.url")
 	if !ok {
 		panic("API URL is not set")
 	}
+
+	// Strip API version prefix
+	r := regexp.MustCompile("^/api/v1")
+	path = r.ReplaceAllString(path, "")
+
+	// Build URL
 	url := fmt.Sprintf("%s%s", baseUrl, path)
 	method = strings.ToUpper(method)
-	apiKey := c.Session["token"]
+
+	var apiKey string
+	if impersonate {
+		apiKey = c.Session["token"]
+	} else {
+		apiKey, ok = revel.Config.String("api.key")
+		if !ok {
+			revel.ERROR.Panic("API authentication key is not set")
+		}
+	}
 
 	revel.TRACE.Printf("Started API Request: %s %s", method, url)
 
@@ -88,12 +104,12 @@ func (c Controller) ApiRequest(method string, path string, body io.Reader) (*htt
 	return res, err
 }
 
-func (c Controller) ApiGet(path string) (*http.Response, error) {
-	return c.ApiRequest("GET", path, nil)
+func (c Controller) ApiGet(impersonate bool, path string) (*http.Response, error) {
+	return c.ApiRequest(impersonate, "GET", path, nil)
 }
 
-func (c Controller) ApiGetBind(path string, v interface{}) (int, error) {
-	res, err := c.ApiRequest("GET", path, nil)
+func (c Controller) ApiGetBind(impersonate bool, path string, v interface{}) (int, error) {
+	res, err := c.ApiRequest(impersonate, "GET", path, nil)
 	if err != nil {
 		return 0, err
 	}
@@ -112,14 +128,14 @@ func (c Controller) ApiGetBind(path string, v interface{}) (int, error) {
 	return res.StatusCode, nil
 }
 
-func (c Controller) ApiPost(path string, body interface{}) (*http.Response, error) {
+func (c Controller) ApiPost(impersonate bool, path string, body interface{}) (*http.Response, error) {
 	b, err := json.Marshal(body)
 	if err != nil {
 		revel.ERROR.Panicf("Failed to encode request body for API request to URL: %s", path)
 	}
 
 	reader := strings.NewReader(string(b))
-	return c.ApiRequest("POST", path, reader)
+	return c.ApiRequest(impersonate, "POST", path, reader)
 }
 
 // Bind decodes the body of a HTTP response into the specified interface
@@ -152,7 +168,7 @@ func (c Controller) AuthContext() *AuthContext {
 	if c.authContext == nil {
 		// fetch user details
 		var user UserModel
-		status, err := c.ApiGetBind("/users/current", &user)
+		status, err := c.ApiGetBind(true, "/users/current", &user)
 		c.Check(err)
 		if status != http.StatusOK {
 			revel.ERROR.Panicf("Failed get current user from the API with: %s", status)
@@ -160,7 +176,7 @@ func (c Controller) AuthContext() *AuthContext {
 
 		// fetch tenant details
 		var tenant TenantModel
-		status, err = c.ApiGetBind("/tenants/current", &tenant)
+		status, err = c.ApiGetBind(true, "/tenants/current", &tenant)
 		c.Check(err)
 		if status != http.StatusOK {
 			revel.ERROR.Panicf("Failed get current user tenancy from the API with: %s", status)
@@ -168,7 +184,7 @@ func (c Controller) AuthContext() *AuthContext {
 
 		// fetch available cmdbs
 		var cmdbs []CmdbModel
-		status, err = c.ApiGetBind("/cmdbs", &cmdbs)
+		status, err = c.ApiGetBind(true, "/cmdbs", &cmdbs)
 		c.Check(err)
 		if status != http.StatusOK {
 			revel.ERROR.Panicf("Failed get a list of CMDBs from the API with: %s", status)
