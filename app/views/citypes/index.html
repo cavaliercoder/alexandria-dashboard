@@ -1,0 +1,47 @@
+{{set . "title" "CI Types"}}
+{{set . "subtitle" .cmdb.Name}}
+{{template "header.html" .}}
+
+<div class="row">
+    <div class="col-lg-3">
+	<div class="list-group">
+		{{range .citypes}}
+		<a href="#" class="list-group-item"><i class="fa fa-fw fa-list"></i>&nbsp;{{.Name}}</a>
+		{{end}}
+		<a href="#" class="list-group-item" data-toggle="modal" data-target=".bs-example-modal-sm"><i class="fa fa-fw fa-plus"></i>&nbsp;New</a>
+	</div>
+</div>
+
+<div class="modal fade bs-example-modal-sm" tabindex="-1" role="dialog" aria-hidden="true">
+  	<div class="modal-dialog ">
+	    <div class="modal-content">
+			<div class="modal-header">
+        		<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+				<h4 class="modal-title">New CI Type</h4>
+			</div>
+			<div class="modal-body">
+				<form method="POST" class="form-horizontal">
+					<div class="form-group">
+						<label for="name" class="col-sm-2 control-label">Name</label>
+						<div class="col-sm-10">
+							<input type="text" class="form-control" id="name" name="name" placeholder="CI type name" />
+						</div>
+					</div>
+					<div class="form-group">
+						<label for="description" class="col-sm-2 control-label">Description</label>
+						<div class="col-sm-10">
+							<textarea id="description" name="description" class="form-control" rows="3"></textarea>
+						</div>
+					</div>
+					<div class="form-group">
+						<div class="col-sm-12">
+							<input type="submit" value="Add" class="btn btn-primary pull-right"></input>
+						</div>
+					</div>
+				</form>
+			</div>
+		</div>
+    </div>
+</div>
+
+{{template "footer.html" .}}

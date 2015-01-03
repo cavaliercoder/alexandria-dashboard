@@ -18,67 +18,57 @@
 package controllers
 
 import (
+	"fmt"
 	"github.com/revel/revel"
 	"net/http"
-	"regexp"
 )
 
-type Cmdbs struct {
+type CITypes struct {
 	Controller
 }
 
-func (c Cmdbs) Index() revel.Result {
-	authContext := c.AuthContext()
+func (c CITypes) Index() revel.Result {
+	cmdb := c.GetContextCmdb()
+	var citypes []CIType
+	status, err := c.ApiGetBind(true, fmt.Sprintf("/cmdbs/%s/citypes", cmdb.Name), &citypes)
+	c.Check(err)
 
-	c.RenderArgs["cmdbs"] = authContext.Cmdbs
-
-	return c.Render()
-}
-
-func (c Cmdbs) Get(cmdb string) revel.Result {
-	db := c.GetCmdb(cmdb)
-	if db != nil {
-		c.SetSessionCmdb(cmdb)
-		return c.Redirect(App.Index)
+	if status != http.StatusOK {
+		revel.ERROR.Panicf("Failed to retrieve CI Types for database %s with: %d", cmdb, status)
 	}
 
-	return c.NotFound("")
-}
-
-func (c Cmdbs) New() revel.Result {
+	c.RenderArgs["citypes"] = citypes
 	return c.Render()
 }
 
-func (c Cmdbs) ProcessNew() revel.Result {
-	var cmdb CmdbModel
-	cmdb.Name = c.Params.Get("name")
-	cmdb.Description = c.Params.Get("description")
+func (c CITypes) ProcessNew() revel.Result {
+	var citype CIType
+	citype.Name = c.Params.Get("name")
+	citype.Description = c.Params.Get("description")
 
 	// Validate params
-	c.Validation.Required(cmdb.Name)
-	c.Validation.Match(cmdb.Name, regexp.MustCompile("^[a-zA-Z0-9-_]+$"))
+	c.Validation.Required(citype.Name)
 	if c.Validation.HasErrors() {
 		c.Validation.Keep()
 		c.FlashParams()
-		return c.Redirect(Cmdbs.New)
+		return c.Redirect(CITypes.Index)
 	}
 
-	// Create new CMDB
-	res, err := c.ApiPost(true, "/cmdbs", &cmdb)
+	// Create the CI Type
+	cmdb := c.GetContextCmdb()
+	res, err := c.ApiPost(true, fmt.Sprintf("/cmdbs/%s/citypes", cmdb.Name), &citype)
 	c.Check(err)
-
-	// Parse the response
 	switch res.StatusCode {
 	case http.StatusCreated:
-		c.Flash.Success("Created %s", cmdb.Name)
-		c.Session["cmdb"] = cmdb.Name
-		return c.Redirect(Cmdbs.Index)
+		c.Flash.Success("Created %s", citype.Name)
+		return c.Redirect("/cmdb/%s/citypes", cmdb.Name)
+
 	case http.StatusConflict:
-		c.Flash.Error("A CMDB already exists with name '%s'", cmdb.Name)
-		return c.Redirect(Cmdbs.New)
+		c.Flash.Error("CI type '%s' already exists", citype.Name)
+		return c.Redirect("/cmdb/%s/citypes", cmdb.Name)
 	default:
-		revel.ERROR.Panicf("Failed to create new CMDB with: %s", res.Status)
+		revel.ERROR.Panicf("Failed to create CI Type with: %s", res.Status)
 	}
 
-	return c.Redirect(Cmdbs.Index)
+	return nil
 }

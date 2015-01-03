@@ -20,9 +20,19 @@ package controllers
 import "github.com/revel/revel"
 
 func init() {
+	// Log all requests in trace mode
+	revel.InterceptFunc(func(c *revel.Controller) revel.Result {
+		revel.TRACE.Printf("Starting: %s", c.Request.URL.String())
+		return nil
+	}, revel.BEFORE, Controller{})
+
 	// Enforce authentication for private controllers
 	revel.InterceptMethod(App.CheckLogin, revel.BEFORE)
 	revel.InterceptMethod(Cmdbs.CheckLogin, revel.BEFORE)
+	revel.InterceptMethod(CITypes.CheckLogin, revel.BEFORE)
+
+	// Validate CMDB URL params for CMDB related routes
+	revel.InterceptMethod(CITypes.ValidateRouteCmdb, revel.BEFORE)
 
 	// Add common RenderArgs such as Application Name
 	revel.InterceptMethod(Controller.AddRenderArgs, revel.BEFORE)

@@ -9,21 +9,28 @@
             </div>
             <!-- Top Menu Items -->
             <ul class="nav navbar-right top-nav">
-                {{if gt (len .AuthContext.Cmdbs) 1}}
                 <li class="dropdown">
+                    {{if eq 0 (len .AuthContext.Cmdbs)}}
+                        <li>
+                            <a href="/cmdbs/new"><i class="fa fa-fw fa-plus"></i> New CMDB</a>
+                        </li>
+                    {{else}}
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-th"></i> {{.cmdb.Name}} <b class="caret"></b></a>
                     <ul class="dropdown-menu">
                         {{$cmdb := .cmdb.Name}}
                         {{range .AuthContext.Cmdbs}}
                         {{if ne $cmdb .Name}}
                         <li>
-                            <a href="/cmdbs/{{.Name}}"><i class="fa fa-fw fa-th"></i> {{.Name}}</a>
+                            <a href="/cmdb/{{.Name}}"><i class="fa fa-fw fa-th"></i> {{.Name}}</a>
                         </li>
                         {{end}}
                         {{end}}
+                        <li>
+                            <a href="/cmdbs/new"><i class="fa fa-fw fa-plus"></i> New CMDB</a>
+                        </li>
                     </ul>
+                    {{end}}
                 </li>
-                {{end}}
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-user"></i> {{.AuthContext.User.DisplayName}} <b class="caret"></b></a>
                     <ul class="dropdown-menu">

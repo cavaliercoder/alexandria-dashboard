@@ -22,9 +22,13 @@ GET     /register                               Auth.Register
 POST    /register                               Auth.ProcessRegistration
 
 GET		/cmdbs									Cmdbs.Index
-GET     /cmdbs/:name                            Cmdbs.Get
 GET     /cmdbs/new                              Cmdbs.New
 POST    /cmdbs/new                              Cmdbs.ProcessNew
+
+GET     /cmdb/:cmdb                             Cmdbs.Get
+
+GET     /cmdb/:cmdb/citypes                     CITypes.Index
+POST    /cmdb/:cmdb/citypes                     CITypes.ProcessNew
 
 # Catch all
 # GET     /:controller/:action                    :controller.:action

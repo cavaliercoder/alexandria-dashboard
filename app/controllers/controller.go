@@ -239,24 +239,76 @@ func (c Controller) CheckLogin() revel.Result {
 	return nil
 }
 
-func (c Controller) Cmdb() *CmdbModel {
-	// Get the user, tenant and cmdbs for this request context
+func (c Controller) GetCmdb(cmdbName string) *CmdbModel {
+	authContext := c.AuthContext()
+	if authContext == nil {
+		return nil
+	}
+
+	for _, cmdb := range authContext.Cmdbs {
+		if cmdb.Name == cmdbName {
+			c.Session["cmdb"] = cmdbName
+			return &cmdb
+		}
+	}
+
+	return nil
+}
+
+// GetContextCmdb returns the CMDB required for the current request context.
+// The appropriate CMDB is determined in the following order of preference:
+// 1. The CMDB described in the URL format /cmdbs/:cmdb (set in Session["cmdb"]
+//    by ValidateRouteCmdb())
+// 2. The CMDB stored in the session cookie
+// 3. The first CMDB associated with the user
+func (c Controller) GetContextCmdb() *CmdbModel {
+	cmdb := c.GetCmdb(c.Session["cmdb"])
+	if cmdb != nil {
+		return cmdb
+	}
+
 	authContext := c.AuthContext()
 	if authContext == nil || len(authContext.Cmdbs) == 0 {
 		return nil
 	}
 
-	// Select a CMDB using the session cookie or the first available CMDB
-	if c.Session["cmdb"] != "" {
-		for _, cmdb := range authContext.Cmdbs {
-			if cmdb.Name == c.Session["cmdb"] {
-				return &cmdb
-			}
-		}
+	return &authContext.Cmdbs[0]
+}
+
+func (c Controller) SetSessionCmdb(cmdbName string) bool {
+	if cmdbName == c.Session["cmdb"] {
+		return true
 	}
 
-	c.Session["cmdb"] = authContext.Cmdbs[0].Name
-	return &authContext.Cmdbs[0]
+	cmdb := c.GetCmdb(cmdbName)
+	if cmdb != nil {
+		c.Session["cmdb"] = cmdb.Name
+		return true
+	}
+
+	return false
+}
+
+// Cmdb is an intercepter ensures the existance of the CMDB required for the
+// current request context.
+// The appropriate CMDB is determined in the following order of preference:
+// 1. The CMDB described in the URL format /cmdbs/:cmdb
+// 2. The CMDB stored in the session cookie
+// 3. The first CMDB associated with the user
+func (c Controller) ValidateRouteCmdb() revel.Result {
+	cmdb := c.Params.Get("cmdb")
+	if cmdb == "" {
+		revel.ERROR.Panic("No CMDB is defined in the current route")
+	}
+
+	if c.GetCmdb(cmdb) == nil {
+		return c.NotFound("No such CMDB was found: %s", cmdb)
+	}
+
+	if !c.SetSessionCmdb(cmdb) {
+		revel.ERROR.Panic("Failed to set session CMDB")
+	}
+	return nil
 }
 
 // AddRenderArgs is an intercepter which adds common render args to the
@@ -265,7 +317,9 @@ func (c Controller) AddRenderArgs() revel.Result {
 	// AppName from config file
 	c.RenderArgs["AppName"], _ = revel.Config.String("app.name")
 
-	// Add current/default CMDB
-	c.RenderArgs["cmdb"] = c.Cmdb()
+	if c.IsLoggedIn() {
+		// Add current/default CMDB
+		c.RenderArgs["cmdb"] = c.GetContextCmdb()
+	}
 	return nil
 }

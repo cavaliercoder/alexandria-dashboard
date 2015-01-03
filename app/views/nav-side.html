@@ -3,14 +3,8 @@
         <li class="active">
             <a href="/"><i class="fa fa-fw fa-dashboard"></i> Dashboard</a>
         </li>
-
-        <li>
-            <a href="/cmdbs/new"><i class="fa fa-fw fa-plus"></i> New CMDB</a>
+        <li class="active">
+            <a href="/cmdbs"><i class="fa fa-fw fa-th"></i> Manage CMDBs</a>
         </li>
-        {{range .AuthContext.Cmdbs}}
-        <li>
-            <a href="/cmdbs/{{.Name}}"><i class="fa fa-fw fa-th"></i> {{.Name}}</a>
-        </li>
-        {{end}}
     </ul>
 </div>
