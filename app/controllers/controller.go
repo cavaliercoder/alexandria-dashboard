@@ -181,5 +181,7 @@ func (c Controller) CheckLogin() revel.Result {
 		return c.Redirect(Auth.Login)
 	}
 
+	c.RenderArgs["AuthContext"] = c.AuthContext()
+
 	return nil
 }
