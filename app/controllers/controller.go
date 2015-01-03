@@ -238,3 +238,34 @@ func (c Controller) CheckLogin() revel.Result {
 
 	return nil
 }
+
+func (c Controller) Cmdb() *CmdbModel {
+	// Get the user, tenant and cmdbs for this request context
+	authContext := c.AuthContext()
+	if authContext == nil || len(authContext.Cmdbs) == 0 {
+		return nil
+	}
+
+	// Select a CMDB using the session cookie or the first available CMDB
+	if c.Session["cmdb"] != "" {
+		for _, cmdb := range authContext.Cmdbs {
+			if cmdb.Name == c.Session["cmdb"] {
+				return &cmdb
+			}
+		}
+	}
+
+	c.Session["cmdb"] = authContext.Cmdbs[0].Name
+	return &authContext.Cmdbs[0]
+}
+
+// AddRenderArgs is an intercepter which adds common render args to the
+// controller for use in templates.
+func (c Controller) AddRenderArgs() revel.Result {
+	// AppName from config file
+	c.RenderArgs["AppName"], _ = revel.Config.String("app.name")
+
+	// Add current/default CMDB
+	c.RenderArgs["cmdb"] = c.Cmdb()
+	return nil
+}

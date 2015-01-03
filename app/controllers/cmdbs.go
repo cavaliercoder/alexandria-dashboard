@@ -35,6 +35,18 @@ func (c Cmdbs) Index() revel.Result {
 	return c.Render()
 }
 
+func (c Cmdbs) Get(name string) revel.Result {
+	authContext := c.AuthContext()
+	for _, cmdb := range authContext.Cmdbs {
+		if cmdb.Name == name {
+			c.Session["cmdb"] = name
+			return c.Redirect(App.Index)
+		}
+	}
+
+	return c.NotFound("")
+}
+
 func (c Cmdbs) New() revel.Result {
 	return c.Render()
 }

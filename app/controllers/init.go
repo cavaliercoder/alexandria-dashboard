@@ -25,14 +25,5 @@ func init() {
 	revel.InterceptMethod(Cmdbs.CheckLogin, revel.BEFORE)
 
 	// Add common RenderArgs such as Application Name
-	revel.InterceptFunc(AddRenderArgs, revel.BEFORE, Controller{})
-
-}
-
-// InitRenderArgs is an intercepter which adds common render args to the
-// controller for use in templates.
-func AddRenderArgs(c *revel.Controller) revel.Result {
-	// AppName from config file
-	c.RenderArgs["AppName"], _ = revel.Config.String("app.name")
-	return nil
+	revel.InterceptMethod(Controller.AddRenderArgs, revel.BEFORE)
 }
