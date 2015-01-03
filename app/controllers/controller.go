@@ -181,16 +181,10 @@ func (c Controller) IsLoggedIn() bool {
 }
 
 func (c Controller) DestroySession() {
+	revel.TRACE.Print("Destroying user session")
 	for k := range c.Session {
 		delete(c.Session, k)
 	}
-}
-
-// InitRenderArgs is an intercepter which adds common render args to the
-// controller for use in templates.
-func (c Controller) InitRenderArgs() revel.Result {
-	c.RenderArgs["AppName"], _ = revel.Config.String("app.name")
-	return nil
 }
 
 // CheckLogin is an interceptor which redirects users to the login screen if
@@ -198,6 +192,7 @@ func (c Controller) InitRenderArgs() revel.Result {
 func (c Controller) CheckLogin() revel.Result {
 	// Check if auth token is set
 	if !c.IsLoggedIn() {
+		revel.TRACE.Printf("Received unauthorized request for: %s", c.Request.URL)
 		// Scrub cookie
 		c.DestroySession()
 
