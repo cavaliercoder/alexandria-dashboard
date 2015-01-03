@@ -41,9 +41,15 @@ func (c Controller) Check(err error) {
 
 func (c Controller) ApiRequest(method string, path string, body io.Reader) (*http.Response, error) {
 	// TODO: Add configurable API url
-	url := fmt.Sprintf("http://localhost:3000/api/v1%s", path)
+	baseUrl, ok := revel.Config.String("api.url")
+	if !ok {
+		panic("API URL is not set")
+	}
+	url := fmt.Sprintf("%s%s", baseUrl, path)
 	method = strings.ToUpper(method)
 	apiKey := c.Session["token"]
+
+	revel.TRACE.Printf("Started API Request: %s %s", method, url)
 
 	// Create a HTTP client that does not follow redirects
 	// This allows 'Location' headers to be read
@@ -77,6 +83,8 @@ func (c Controller) ApiRequest(method string, path string, body io.Reader) (*htt
 	if res == nil {
 		panic("An error occurred communicating with backend services")
 	}
+
+	revel.TRACE.Printf("Finished API request: %s", res.Status)
 
 	return res, err
 }
@@ -137,7 +145,7 @@ func (c Controller) Bind(res *http.Response, v interface{}) error {
 
 func (c Controller) AuthContext() *AuthContext {
 	// Check for the auth key in the session cookie
-	if c.Session["token"] == "" {
+	if !c.IsLoggedIn() {
 		c.authContext = nil
 		return nil
 	}
@@ -168,13 +176,30 @@ func (c Controller) AuthContext() *AuthContext {
 	return c.authContext
 }
 
+func (c Controller) IsLoggedIn() bool {
+	return c.Session["token"] != ""
+}
+
+func (c Controller) DestroySession() {
+	for k := range c.Session {
+		delete(c.Session, k)
+	}
+}
+
+// InitRenderArgs is an intercepter which adds common render args to the
+// controller for use in templates.
+func (c Controller) InitRenderArgs() revel.Result {
+	c.RenderArgs["AppName"], _ = revel.Config.String("app.name")
+	return nil
+}
+
+// CheckLogin is an interceptor which redirects users to the login screen if
+// they attempt to access a private resource without being logged in.
 func (c Controller) CheckLogin() revel.Result {
 	// Check if auth token is set
-	if c.Session["token"] == "" {
+	if !c.IsLoggedIn() {
 		// Scrub cookie
-		for k := range c.Session {
-			delete(c.Session, k)
-		}
+		c.DestroySession()
 
 		// redirect to login
 		c.Flash.Error("Please log in first")

@@ -18,6 +18,8 @@ GET     /                                       App.Index
 GET     /login                                  Auth.Login
 POST    /login                                  Auth.ValidateLogin
 GET     /logout                                 Auth.Logout
+GET     /register                               Auth.Register
+POST    /register                               Auth.ProcessRegistration
 
 # Catch all
 # GET     /:controller/:action                    :controller.:action

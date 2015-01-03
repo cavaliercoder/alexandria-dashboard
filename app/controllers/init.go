@@ -21,4 +21,5 @@ import "github.com/revel/revel"
 
 func init() {
 	revel.InterceptMethod(App.CheckLogin, revel.BEFORE)
+	revel.InterceptMethod(App.InitRenderArgs, revel.BEFORE)
 }

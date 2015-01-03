@@ -31,6 +31,17 @@ func (c Auth) Login() revel.Result {
 	return c.Render()
 }
 
+func (c Auth) Register() revel.Result {
+	return c.Render()
+}
+
+func (c Auth) ProcessRegistration() revel.Result {
+	// Destroy any existing session
+	c.DestroySession()
+
+	return c.Render()
+}
+
 func (c Auth) ValidateLogin(username string, password string) revel.Result {
 	// TODO: Antiforgery token
 	var err error
@@ -59,12 +70,13 @@ func (c Auth) ValidateLogin(username string, password string) revel.Result {
 		return c.Redirect(Auth.Login)
 
 	case http.StatusOK:
-		// Parse the apiKey
+		// Parse the apiKey from the API response
 		result := make(map[string]string)
 		err = c.Bind(res, &result)
 		c.Check(err)
-
 		apiKey := result["apiKey"]
+
+		// Store the auth token in the session cookie
 		c.Session["token"] = apiKey
 
 		// Now that the apiKey is set, fetch the current user details
@@ -81,9 +93,7 @@ func (c Auth) ValidateLogin(username string, password string) revel.Result {
 }
 
 func (c Auth) Logout() revel.Result {
-	for k := range c.Session {
-		delete(c.Session, k)
-	}
+	c.DestroySession()
 
 	return c.Redirect(Auth.Login)
 }
