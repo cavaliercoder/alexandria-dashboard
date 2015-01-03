@@ -120,9 +120,11 @@ func (c Controller) ApiGetBind(impersonate bool, path string, v interface{}) (in
 
 	defer res.Body.Close()
 
-	err = json.NewDecoder(res.Body).Decode(v)
-	if err != nil {
-		return res.StatusCode, err
+	if res.StatusCode == http.StatusOK {
+		err = json.NewDecoder(res.Body).Decode(v)
+		if err != nil {
+			return res.StatusCode, err
+		}
 	}
 
 	return res.StatusCode, nil
