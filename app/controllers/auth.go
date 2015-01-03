@@ -70,7 +70,7 @@ func (c Auth) ValidateLogin(username string, password string) revel.Result {
 		// Now that the apiKey is set, fetch the current user details
 		// TODO: Stop fetching user context to validate login
 		context := c.AuthContext()
-		c.Flash.Success("Welcome %s!", context.User.FirstName)
+		c.Flash.Success("Welcome %s!", context.User.DisplayName())
 
 		// Great success
 		return c.Redirect(App.Index)

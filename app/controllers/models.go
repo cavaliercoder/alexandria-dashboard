@@ -29,6 +29,14 @@ type UserModel struct {
 	Email     string `json:"email"`
 }
 
+func (c *UserModel) DisplayName() string {
+	if c.FirstName == "" {
+		return c.Email
+	} else {
+		return c.FirstName
+	}
+}
+
 type TenantModel struct {
 	Code string `json:"code"`
 	Name string `json:"name"`
