@@ -23,7 +23,6 @@ import (
 	"fmt"
 	"github.com/revel/revel"
 	"io"
-	"log"
 	"net/http"
 	"strings"
 )
@@ -35,7 +34,7 @@ type Controller struct {
 
 func (c Controller) Check(err error) {
 	if err != nil {
-		log.Panic(err)
+		revel.ERROR.Panic(err)
 	}
 }
 
@@ -93,30 +92,30 @@ func (c Controller) ApiGet(path string) (*http.Response, error) {
 	return c.ApiRequest("GET", path, nil)
 }
 
-func (c Controller) ApiGetBind(path string, v interface{}) error {
+func (c Controller) ApiGetBind(path string, v interface{}) (int, error) {
 	res, err := c.ApiRequest("GET", path, nil)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	if res.Body == nil {
-		return errors.New("Response body is empty")
+		return res.StatusCode, errors.New("Response body is empty")
 	}
 
 	defer res.Body.Close()
 
 	err = json.NewDecoder(res.Body).Decode(v)
 	if err != nil {
-		return err
+		return res.StatusCode, err
 	}
 
-	return nil
+	return res.StatusCode, nil
 }
 
 func (c Controller) ApiPost(path string, body interface{}) (*http.Response, error) {
 	b, err := json.Marshal(body)
 	if err != nil {
-		log.Panicf("Failed to encode request body for API request to URL: %s", path)
+		revel.ERROR.Panicf("Failed to encode request body for API request to URL: %s", path)
 	}
 
 	reader := strings.NewReader(string(b))
@@ -153,18 +152,27 @@ func (c Controller) AuthContext() *AuthContext {
 	if c.authContext == nil {
 		// fetch user details
 		var user UserModel
-		err := c.ApiGetBind("/users/current", &user)
+		status, err := c.ApiGetBind("/users/current", &user)
 		c.Check(err)
+		if status != http.StatusOK {
+			revel.ERROR.Panicf("Failed get current user from the API with: %s", status)
+		}
 
 		// fetch tenant details
 		var tenant TenantModel
-		err = c.ApiGetBind("/tenants/current", &tenant)
+		status, err = c.ApiGetBind("/tenants/current", &tenant)
 		c.Check(err)
+		if status != http.StatusOK {
+			revel.ERROR.Panicf("Failed get current user tenancy from the API with: %s", status)
+		}
 
 		// fetch available cmdbs
 		var cmdbs []CmdbModel
-		err = c.ApiGetBind("/cmdbs", &cmdbs)
+		status, err = c.ApiGetBind("/cmdbs", &cmdbs)
 		c.Check(err)
+		if status != http.StatusOK {
+			revel.ERROR.Panicf("Failed get a list of CMDBs from the API with: %s", status)
+		}
 
 		c.authContext = &AuthContext{
 			User:   user,

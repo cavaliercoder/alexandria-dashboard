@@ -24,9 +24,11 @@ type AuthContext struct {
 }
 
 type UserModel struct {
-	FirstName string `json:"firstName"`
-	LastName  string `json:"lastName"`
-	Email     string `json:"email"`
+	TenantId  interface{} `json:"tenantid"`
+	FirstName string      `json:"firstName"`
+	LastName  string      `json:"lastName"`
+	Email     string      `json:"email"`
+	Password  string      `json:"password"`
 }
 
 func (c *UserModel) DisplayName() string {
@@ -38,8 +40,9 @@ func (c *UserModel) DisplayName() string {
 }
 
 type TenantModel struct {
-	Code string `json:"code"`
-	Name string `json:"name"`
+	Id   interface{} `json:"id"`
+	Code string      `json:"code"`
+	Name string      `json:"name"`
 }
 
 type CmdbModel struct {

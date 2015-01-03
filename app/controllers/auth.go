@@ -19,6 +19,7 @@ package controllers
 
 import (
 	"errors"
+	"fmt"
 	"github.com/revel/revel"
 	"net/http"
 )
@@ -36,10 +37,93 @@ func (c Auth) Register() revel.Result {
 }
 
 func (c Auth) ProcessRegistration() revel.Result {
+
+	var tenant TenantModel
+	var user UserModel
+
 	// Destroy any existing session
 	c.DestroySession()
 
-	return c.Render()
+	// Get fields
+	firstName := c.Params.Get("firstname")
+	lastName := c.Params.Get("lastname")
+	email := c.Params.Get("email")
+	password := c.Params.Get("password")
+	password2 := c.Params.Get("password2")
+	tenantCode := c.Params.Get("tenant")
+
+	// Validate form
+	c.Validation.Required(email)
+	c.Validation.Required(password)
+	c.Validation.Required(password == password2).Message("Passwords do not match")
+	if c.Validation.HasErrors() {
+		c.Validation.Keep()
+		c.FlashParams()
+		return c.Redirect(Auth.Register)
+	}
+
+	user.Email = email
+	user.FirstName = firstName
+	user.LastName = lastName
+	user.Password = password
+
+	// Get/Create tenant
+	if tenantCode == "" {
+		// Create a new tenant
+		tenant.Name = email
+		res, err := c.ApiPost("/tenants", &tenant)
+
+		if err != nil {
+			revel.ERROR.Panicf("Failed to create new tenant with: %s", err)
+		} else if res.StatusCode != http.StatusCreated {
+			revel.ERROR.Panicf("Failed to create new tenant with: %s", res.Status)
+		}
+
+		tenantUrl := res.Header.Get("Location")
+		if tenantUrl == "" {
+			revel.ERROR.Panicf("No location header returned for new tenant registration.")
+		}
+
+		// Fetch the new tenant
+		_, err = c.ApiGetBind(tenantUrl, &tenant)
+		c.Check(err)
+
+		tenantCode = tenant.Code
+		user.TenantId = tenant.Id
+	} else {
+		// Find an existing tenant
+		status, err := c.ApiGetBind(fmt.Sprintf("/tenants/%s", tenantCode), &tenant)
+		c.Check(err)
+		switch status {
+		case http.StatusOK:
+			user.TenantId = tenant.Id
+		case http.StatusNotFound:
+			c.Flash.Error(fmt.Sprintf("No tenant found with code: %s", tenantCode))
+			return c.Redirect(Auth.Register)
+		default:
+			revel.ERROR.Panicf("Failed to find existing tenant with status: %d", status)
+		}
+
+		user.TenantId = tenant.Id
+	}
+
+	// Create the user
+	res, err := c.ApiPost("/users", &user)
+	c.Check(err)
+	switch res.StatusCode {
+	case http.StatusCreated:
+		// Log the new user in
+		return c.ValidateLogin(email, password)
+
+	case http.StatusConflict:
+		c.Flash.Error(fmt.Sprintf("An account is already registered for %s", email))
+		return c.Redirect(Auth.Register)
+
+	default:
+		revel.ERROR.Panicf("Failed to create user with: %s", res.Status)
+	}
+
+	return nil
 }
 
 func (c Auth) ValidateLogin(username string, password string) revel.Result {
