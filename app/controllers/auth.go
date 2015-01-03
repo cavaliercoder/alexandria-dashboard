@@ -45,32 +45,27 @@ func (c Auth) ProcessRegistration() revel.Result {
 	c.DestroySession()
 
 	// Get fields
-	firstName := c.Params.Get("firstname")
-	lastName := c.Params.Get("lastname")
-	email := c.Params.Get("email")
-	password := c.Params.Get("password")
+	user.FirstName = c.Params.Get("firstname")
+	user.LastName = c.Params.Get("lastname")
+	user.Email = c.Params.Get("email")
+	user.Password = c.Params.Get("password")
 	password2 := c.Params.Get("password2")
-	tenantCode := c.Params.Get("tenant")
+	user.TenantCode = c.Params.Get("tenant")
 
 	// Validate form
-	c.Validation.Required(email)
-	c.Validation.Required(password)
-	c.Validation.Required(password == password2).Message("Passwords do not match")
+	c.Validation.Required(user.Email)
+	c.Validation.Required(user.Password)
+	c.Validation.Required(user.Password == password2).Message("Passwords do not match")
 	if c.Validation.HasErrors() {
 		c.Validation.Keep()
 		c.FlashParams()
 		return c.Redirect(Auth.Register)
 	}
 
-	user.Email = email
-	user.FirstName = firstName
-	user.LastName = lastName
-	user.Password = password
-
 	// Get/Create tenant
-	if tenantCode == "" {
+	if user.TenantCode == "" {
 		// Create a new tenant
-		tenant.Name = email
+		tenant.Name = user.Email
 		res, err := c.ApiPost(false, "/tenants", &tenant)
 
 		if err != nil {
@@ -88,23 +83,20 @@ func (c Auth) ProcessRegistration() revel.Result {
 		_, err = c.ApiGetBind(false, tenantUrl, &tenant)
 		c.Check(err)
 
-		tenantCode = tenant.Code
-		user.TenantId = tenant.Id
+		user.TenantCode = tenant.Code
 	} else {
 		// Find an existing tenant
-		status, err := c.ApiGetBind(false, fmt.Sprintf("/tenants/%s", tenantCode), &tenant)
+		status, err := c.ApiGetBind(false, fmt.Sprintf("/tenants/%s", user.TenantCode), &tenant)
 		c.Check(err)
 		switch status {
 		case http.StatusOK:
-			user.TenantId = tenant.Id
+			user.TenantCode = tenant.Code
 		case http.StatusNotFound:
-			c.Flash.Error(fmt.Sprintf("No tenant found with code: %s", tenantCode))
+			c.Flash.Error(fmt.Sprintf("No tenant found with code: %s", user.TenantCode))
 			return c.Redirect(Auth.Register)
 		default:
 			revel.ERROR.Panicf("Failed to find existing tenant with status: %d", status)
 		}
-
-		user.TenantId = tenant.Id
 	}
 
 	// Create the user
@@ -113,10 +105,10 @@ func (c Auth) ProcessRegistration() revel.Result {
 	switch res.StatusCode {
 	case http.StatusCreated:
 		// Log the new user in
-		return c.ValidateLogin(email, password)
+		return c.ValidateLogin(user.Email, user.Password)
 
 	case http.StatusConflict:
-		c.Flash.Error(fmt.Sprintf("An account is already registered for %s", email))
+		c.Flash.Error(fmt.Sprintf("An account is already registered for %s", user.Email))
 		return c.Redirect(Auth.Register)
 
 	default:
