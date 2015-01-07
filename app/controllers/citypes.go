@@ -32,11 +32,11 @@ func (c CITypes) Index(id string) revel.Result {
 
 	// Get CI Types
 	var citypes []CITypeModel
-	status, err := c.ApiGetBind(true, fmt.Sprintf("/cmdbs/%s/citypes", cmdb.Name), &citypes)
+	status, err := c.ApiGetBind(true, fmt.Sprintf("/cmdbs/%s/citypes", cmdb.ShortName), &citypes)
 	c.Check(err)
 
 	if status != http.StatusOK {
-		revel.ERROR.Panicf("Failed to retrieve CI Types for database %s with: %d", cmdb, status)
+		revel.ERROR.Panicf("Failed to retrieve CI Types for database %s with: %d", cmdb.Name, status)
 	}
 
 	c.RenderArgs["citypes"] = citypes
@@ -49,7 +49,7 @@ func (c CITypes) Index(id string) revel.Result {
 	} else {
 		found := false
 		for _, citype := range citypes {
-			if citype.Name == id {
+			if citype.ShortName == id {
 				c.RenderArgs["citype"] = &citype
 				found = true
 				break
@@ -78,12 +78,12 @@ func (c CITypes) ProcessNew() revel.Result {
 
 	// Create the CI Type
 	cmdb := c.GetContextCmdb()
-	res, err := c.ApiPost(true, fmt.Sprintf("/cmdbs/%s/citypes", cmdb.Name), &citype)
+	res, err := c.ApiPost(true, fmt.Sprintf("/cmdbs/%s/citypes", cmdb.ShortName), &citype)
 	c.Check(err)
 	switch res.StatusCode {
 	case http.StatusCreated:
 		c.Flash.Success("Created %s", citype.Name)
-		return c.Redirect("/cmdb/%s/citypes/%s", cmdb.Name, citype.Name)
+		return c.Redirect("/cmdb/%s/citypes/%s", cmdb.ShortName, citype.ShortName)
 
 	case http.StatusConflict:
 		c.Flash.Error("CI type '%s' already exists", citype.Name)

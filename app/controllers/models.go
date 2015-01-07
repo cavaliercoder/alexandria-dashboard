@@ -46,17 +46,20 @@ type TenantModel struct {
 
 type CmdbModel struct {
 	Name        string `json:"name"`
+	ShortName   string `json:"shortName"`
 	Description string `json:"description"`
 }
 
 type CITypeModel struct {
 	Name        string `json:"name"`
+	ShortName   string `json:"shortName"`
 	Description string `json:"description"`
 	InheritFrom string `json:"inheritFrom"`
 }
 
 type CITypeAttributeModel struct {
 	Name        string                 `json:"name"`
+	ShortName   string                 `json:"shortName"`
 	Description string                 `json:"name"`
 	Type        string                 `json:"type"`
 	Children    []CITypeAttributeModel `json:"children"`
