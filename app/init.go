@@ -2,6 +2,7 @@ package app
 
 import (
 	"github.com/revel/revel"
+	"html/template"
 )
 
 func init() {
@@ -28,6 +29,11 @@ func init() {
 	// ( order dependent )
 	// revel.OnAppStart(InitDB)
 	// revel.OnAppStart(FillCache)
+
+	// Print raw JSON data in scripts
+	revel.TemplateFuncs["rawjs"] = func(arg string) template.JS {
+		return template.JS(arg)
+	}
 }
 
 // TODO turn this into revel.HeaderFilter

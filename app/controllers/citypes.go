@@ -18,6 +18,7 @@
 package controllers
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/revel/revel"
 	"net/http"
@@ -42,16 +43,19 @@ func (c CITypes) Index(id string) revel.Result {
 	c.RenderArgs["citypes"] = citypes
 
 	// Get selected CI Type
+	var citype *CITypeModel
 	if id == "" {
 		if 0 < len(citypes) {
-			c.RenderArgs["citype"] = &citypes[0]
+			// Select the first by default
+			citype = &citypes[0]
 		}
 	} else {
+		// Find the selected type
 		found := false
-		for _, citype := range citypes {
-			if citype.ShortName == id {
-				c.RenderArgs["citype"] = &citype
+		for _, v := range citypes {
+			if v.ShortName == id {
 				found = true
+				citype = &v
 				break
 			}
 		}
@@ -60,6 +64,17 @@ func (c CITypes) Index(id string) revel.Result {
 			return c.NotFound("No such CI Type: %s", id)
 		}
 	}
+
+	// Store the CI type for rendering
+	c.RenderArgs["citype"] = citype
+
+	// Store raw JSON version for javascript
+	bytes, err := json.Marshal(citype)
+	if err != nil {
+		revel.ERROR.Panicf("Failed to marshall interface to JSON with: %s", err)
+	}
+	c.RenderArgs["citypeJson"] = string(bytes)
+
 	return c.Render()
 }
 

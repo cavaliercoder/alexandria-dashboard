@@ -51,10 +51,11 @@ type CmdbModel struct {
 }
 
 type CITypeModel struct {
-	Name        string `json:"name"`
-	ShortName   string `json:"shortName"`
-	Description string `json:"description"`
-	InheritFrom string `json:"inheritFrom"`
+	Name        string                 `json:"name"`
+	ShortName   string                 `json:"shortName"`
+	Description string                 `json:"description"`
+	InheritFrom string                 `json:"inheritFrom"`
+	Attributes  []CITypeAttributeModel `json:"attributes"`
 }
 
 type CITypeAttributeModel struct {

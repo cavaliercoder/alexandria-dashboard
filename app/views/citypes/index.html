@@ -2,33 +2,56 @@
 {{set . "subtitle" "CI Types"}}
 {{template "header.html" .}}
 
+{{if .citypeJson}}
+<script type="text/javascript">
+	var citype = {{rawjs .citypeJson}};
+	var origCitype = {{rawjs .citypeJson}};
+</script>
+{{end}}
+{{append . "moreScripts" "js/citype.js"}}
+
 {{$cmdb := .cmdb}}
 {{$citype := .citype}}
 
 <div class="row">
-	<!-- CI Type list -->
-    <div class="col-lg-3">
-    	<h4>CI Types</h4>
-		<div class="list-group">
-
-			{{range .citypes}}
-			{{if eq .Name $citype.Name}}
-			<a href="/cmdb/{{$cmdb.ShortName}}/citypes/{{.ShortName}}" class="list-group-item active"><i class="fa fa-fw fa-list"></i>&nbsp;{{.Name}}</a>
-			{{else}}
-			<a href="/cmdb/{{$cmdb.ShortName}}/citypes/{{.ShortName}}" class="list-group-item"><i class="fa fa-fw fa-list"></i>&nbsp;{{.Name}}</a>
-			{{end}}
-			{{end}}
-			<a href="#" class="list-group-item" data-toggle="modal" data-target=".modal-add-ci-type"><i class="fa fa-fw fa-plus"></i>&nbsp;New</a>
-		</div>
-	</div>
-
 	<!-- Attribute list for current CI Type -->
 	{{if .citype}}
 	<div class="col-lg-3">
-		<h4>Attributes</h4>
-		<div class="list-group">
-			<a href="#" class="list-group-item" data-toggle="modal" data-target=".modal-add-ci-att"><i class="fa fa-fw fa-plus"></i>&nbsp;New</a>
-		</div>
+		<ul id="attlist" class="list-group">
+			{{range $citype.Attributes}}
+			<li>{{.Name}}</li>
+			{{end}}
+			<li id="newatt" class="list-group-item"><i class="fa fa-fw fa-plus"></i>New</li>
+		</ul>
+	</div>
+	<!-- Attribute editor -->
+	<div class="col-lg-5">
+		<form method="POST" class="form-horizontal">
+			<div class="form-group">
+				<label for="name" class="col-sm-2 control-label">Name</label>
+				<div class="col-sm-10">
+					<input type="text" class="form-control" id="attName" name="name" placeholder="CI type name" />
+				</div>
+			</div>
+			<div class="form-group">
+				<label for="type" class="col-sm-2 control-label">Type</label>
+				<div class="col-sm-10">
+					<select name="type" id="attType" class="form-control">
+						<option value="string">String</option>
+						<option value="group">Group</option>
+					</select>
+				</div>
+			</div>
+			<div class="form-group">
+				<label for="description" class="col-sm-2 control-label">Description</label>
+				<div class="col-sm-10">
+					<textarea id="attDesc" name="description" class="form-control" rows="3"></textarea>
+				</div>
+			</div>
+			<div class="form-group">
+				<button class="btn btn-primary" id="save">Save</button>
+			</div>
+		</form>
 	</div>
 	{{end}}
 </div>
@@ -67,47 +90,29 @@
     </div>
 </div>
 
-<!-- Add CI Type attribute modal -->
-<div class="modal fade modal-add-ci-att" tabindex="-1" role="dialog" aria-hidden="true">
-  	<div class="modal-dialog ">
-	    <div class="modal-content">
-			<div class="modal-header">
-        		<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-				<h4 class="modal-title">New attribute</h4>
-			</div>
-			<div class="modal-body">
-				<form method="POST" action="/cmdb/{{.cmdb.Name}}/citypes" class="form-horizontal">
-					<div class="form-group">
-						<label for="name" class="col-sm-2 control-label">Name</label>
-						<div class="col-sm-10">
-							<input type="text" class="form-control" id="name" name="name" placeholder="Attribute name" />
-						</div>
-					</div>
-					<div class="form-group">
-						<label for="name" class="col-sm-2 control-label">Type</label>
-						<div class="col-sm-10">
-							<select class="form-control">
-								<option value="string">String</option>
-								<option value="group">Attribute group</option>
-							</select>
-						</div>
-					</div>
-					<div class="form-group">
-						<label for="description" class="col-sm-2 control-label">Description</label>
-						<div class="col-sm-10">
-							<textarea id="description" name="description" class="form-control" rows="3"></textarea>
-						</div>
-					</div>
-					<div class="form-group">
-						<div class="col-sm-12">
-							<button type="button" class="btn btn-default pull-right" data-dismiss="modal" aria-label="Close">Cancel</button>
-							<input type="submit" value="Add" class="btn btn-primary pull-right"></input>
-						</div>
-					</div>
-				</form>
-			</div>
-		</div>
-    </div>
-</div>
-
 {{template "footer.html" .}}
+
+<!-- CI Type list -->
+{{define "nav-side-more" }}
+{{$cmdb := .cmdb}}
+{{$citype := .citype}}
+{{if .citypes}}
+<li>
+    <a data-target="#demo" data-toggle="collapse" href="javascript:;" class="" aria-expanded="true"><i class="fa fa-fw fa-arrows-v"></i> CI Types <i class="fa fa-fw fa-caret-down"></i></a>
+    <ul class="collapse in" id="demo" aria-expanded="true" style="">    
+		{{range .citypes}}
+		<li>
+			{{if eq .Name $citype.Name}}
+			<a href="/cmdb/{{$cmdb.ShortName}}/citypes/{{.ShortName}}" >{{.Name}}</a>
+			{{else}}
+			<a href="/cmdb/{{$cmdb.ShortName}}/citypes/{{.ShortName}}">{{.Name}}</a>
+			{{end}}
+		</li>
+		{{end}}
+		<li>
+			<a href="#" data-toggle="modal" data-target=".modal-add-ci-type">New</a>
+		</li>	
+    </ul>
+</li>
+{{end}}
+{{end}}

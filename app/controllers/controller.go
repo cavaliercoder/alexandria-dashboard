@@ -23,6 +23,7 @@ import (
 	"fmt"
 	"github.com/revel/revel"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"regexp"
 	"strings"
@@ -96,7 +97,6 @@ func (c Controller) ApiRequest(impersonate bool, method string, path string, bod
 
 	// Submit the request
 	res, err := client.Do(req)
-
 	if res == nil {
 		revel.ERROR.Panic("An error occurred communicating with backend services")
 	}
@@ -115,6 +115,29 @@ func (c Controller) ApiGet(impersonate bool, path string) (*http.Response, error
 	return c.ApiRequest(impersonate, "GET", path, nil)
 }
 
+func (c Controller) ApiGetString(impersonate bool, path string) (string, int, error) {
+	res, err := c.ApiRequest(impersonate, "GET", path, nil)
+	if err != nil {
+		return "", 0, err
+	}
+
+	var bytes []byte
+	if res.Body != nil {
+		defer res.Body.Close()
+		bytes, err = ioutil.ReadAll(res.Body)
+		if err != nil {
+			return string(bytes), res.StatusCode, err
+		}
+	}
+
+	return string(bytes), res.StatusCode, nil
+}
+
+func (c Controller) BindJson(body io.Reader, v interface{}) error {
+	err := json.NewDecoder(body).Decode(v)
+	return err
+}
+
 func (c Controller) ApiGetBind(impersonate bool, path string, v interface{}) (int, error) {
 	res, err := c.ApiRequest(impersonate, "GET", path, nil)
 	if err != nil {
@@ -128,7 +151,7 @@ func (c Controller) ApiGetBind(impersonate bool, path string, v interface{}) (in
 	defer res.Body.Close()
 
 	if res.StatusCode == http.StatusOK {
-		err = json.NewDecoder(res.Body).Decode(v)
+		err = c.BindJson(res.Body, v)
 		if err != nil {
 			return res.StatusCode, err
 		}
@@ -140,11 +163,21 @@ func (c Controller) ApiGetBind(impersonate bool, path string, v interface{}) (in
 func (c Controller) ApiPost(impersonate bool, path string, body interface{}) (*http.Response, error) {
 	b, err := json.Marshal(body)
 	if err != nil {
-		revel.ERROR.Panicf("Failed to encode request body for API request to URL: %s", path)
+		revel.ERROR.Panicf("Failed to encode POST request body for API request to URL: %s", path)
 	}
 
 	reader := strings.NewReader(string(b))
 	return c.ApiRequest(impersonate, "POST", path, reader)
+}
+
+func (c Controller) ApiPut(impersonate bool, path string, body interface{}) (*http.Response, error) {
+	b, err := json.Marshal(body)
+	if err != nil {
+		revel.ERROR.Panicf("Failed to encode PUT request body for API request to URL: %s", path)
+	}
+
+	reader := strings.NewReader(string(b))
+	return c.ApiRequest(impersonate, "PUT", path, reader)
 }
 
 // Bind decodes the body of a HTTP response into the specified interface
