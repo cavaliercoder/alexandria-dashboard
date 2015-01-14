@@ -108,6 +108,10 @@ function setAttribute(att) {
 	inputAttDescription.val(att.description);
 	selectAttType.val(att.type);
 
+	// Update the active list item
+	ulAtts.children('li').removeClass('active');
+	liAtt.addClass('active');
+
 	suspendUi = false;
 }
 
