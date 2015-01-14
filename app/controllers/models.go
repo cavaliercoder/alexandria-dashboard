@@ -61,7 +61,7 @@ type CITypeModel struct {
 type CITypeAttributeModel struct {
 	Name        string                 `json:"name"`
 	ShortName   string                 `json:"shortName"`
-	Description string                 `json:"name"`
+	Description string                 `json:"description"`
 	Type        string                 `json:"type"`
 	Children    []CITypeAttributeModel `json:"children"`
 }

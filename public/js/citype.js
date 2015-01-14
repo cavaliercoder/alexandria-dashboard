@@ -1,11 +1,16 @@
 var selectedAtt = null;
 
+var inputTypeName = null;
+var inputTypeDescription = null;
 var ulAtts = null;
 var liNewAtt = null;
 var liAtt = null;
 var inputAttName = null;
 var inputAttDescription = null;
 var selectAttType = null;
+
+var submitForm = null;
+var submitData = null;
 var buttonSave = null;
 
 var suspendUi = false;
@@ -124,39 +129,65 @@ function updateCitype() {
 
 	var att = selectedAtt;
 
-	// Update the attribute with form data
-	att.name = inputAttName.val();
-	att.description = inputAttDescription.val();
-	att.type = selectAttType.val();
+	// Update the CI Type with form data
+	citype.name = inputTypeName.val();
+	citype.description = inputTypeDescription.val();
 
-	// Update the list item with the attribute data
-	li = getAttListItem(att);
-	buildAttributeListItem(att, li);
+	// Update the attribute with form data
+	if (att) {
+		att.name = inputAttName.val();
+		att.description = inputAttDescription.val();
+		att.type = selectAttType.val();
+
+		// Update the list item with the attribute data
+		li = getAttListItem(att);
+		buildAttributeListItem(att, li);
+	}
 }
 
 function commitCitype() {
-	$.post('', {"data": JSON.stringify(citype)}, function(data, textStatus, jqXHR) {
-		console.log(data);
-		console.log(textStatus);
-		console.log(jqXHR);
-	});
+	submitData.val(JSON.stringify(citype));
+    submitForm.submit();
 
 	return false;
 }
 
 $(document).ready(function() {
+	// Declare DOM elements
 	ulAtts = $('#attlist');
 	liNewAtt = $('#newatt');
 
-	buttonSave = $('#save');
+	inputTypeName = $('#typeName');
+	inputTypeDescription = $('#typeDesc');
+
 	inputAttName = $('#attName');
 	inputAttDescription = $('#attDesc');
 	selectAttType = $('#attType');
 
-	buttonSave.click(commitCitype);
+	submitForm = $('#submitForm');
+	submitData = $('#submitData');
+	buttonSave = $('#save');
+
+	// Wire up DOM events
+	liNewAtt.click(addAttribute);
+
+	inputTypeName.change(updateCitype);
+	inputTypeDescription.change(updateCitype);
 	inputAttName.change(updateCitype);
 	inputAttDescription.change(updateCitype);
 	selectAttType.change(updateCitype);
+	
+	buttonSave.click(commitCitype);
+	
+	
+	// Display initial details
+	for (i = 0; i < citype.attributes.length; i++) {
+		att = citype.attributes[i];
+		li = buildAttributeListItem(att, null);
+		ulAtts.append(li);
+	}
 
-	liNewAtt.click(addAttribute);
+	if (citype.attributes.length > 0) {
+		setAttribute(citype.attributes[0]);
+	}
 });

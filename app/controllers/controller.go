@@ -84,7 +84,7 @@ func (c Controller) ApiRequest(impersonate bool, method string, path string, bod
 	}
 
 	// Add request headers
-	if method == "POST" {
+	if method == "POST" || method == "PUT" || method == "PATCH" {
 		req.Header.Add("Content-type", "application/json")
 	}
 
@@ -160,23 +160,35 @@ func (c Controller) ApiGetBind(impersonate bool, path string, v interface{}) (in
 	return res.StatusCode, nil
 }
 
-func (c Controller) ApiPost(impersonate bool, path string, body interface{}) (*http.Response, error) {
-	b, err := json.Marshal(body)
-	if err != nil {
-		revel.ERROR.Panicf("Failed to encode POST request body for API request to URL: %s", path)
+func (c Controller) GetReader(body interface{}) (io.Reader, error) {
+	if str, ok := body.(string); ok {
+		return strings.NewReader(str), nil
 	}
 
-	reader := strings.NewReader(string(b))
+	b, err := json.Marshal(body)
+	if err != nil {
+		revel.ERROR.Panicf("Failed to encode request body: %#v", body)
+		return nil, err
+	}
+
+	return strings.NewReader(string(b)), nil
+}
+
+func (c Controller) ApiPost(impersonate bool, path string, body interface{}) (*http.Response, error) {
+	reader, err := c.GetReader(body)
+	if err != nil {
+		return nil, err
+	}
+
 	return c.ApiRequest(impersonate, "POST", path, reader)
 }
 
 func (c Controller) ApiPut(impersonate bool, path string, body interface{}) (*http.Response, error) {
-	b, err := json.Marshal(body)
+	reader, err := c.GetReader(body)
 	if err != nil {
-		revel.ERROR.Panicf("Failed to encode PUT request body for API request to URL: %s", path)
+		return nil, err
 	}
 
-	reader := strings.NewReader(string(b))
 	return c.ApiRequest(impersonate, "PUT", path, reader)
 }
 

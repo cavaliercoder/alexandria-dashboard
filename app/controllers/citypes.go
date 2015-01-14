@@ -109,3 +109,51 @@ func (c CITypes) ProcessNew() revel.Result {
 
 	return nil
 }
+
+func (c CITypes) ProcessUpdate(cmdb string, id string, data string) revel.Result {
+	// Validate request
+	c.Validation.Required(cmdb)
+	c.Validation.Required(id)
+	c.Validation.Required(data)
+	if c.Validation.HasErrors() {
+		c.Validation.Keep()
+		c.FlashParams()
+		return c.Redirect(CITypes.Index)
+	}
+
+	// Get the old type
+	var oldUri = fmt.Sprintf("/cmdbs/%s/citypes/%s", cmdb, id)
+	var original CITypeModel
+	status, err := c.ApiGetBind(true, oldUri, &original)
+	c.Check(err)
+	if status != http.StatusOK {
+		c.Flash.Error("Failed to retrieve original CI Type: %s", id)
+		return c.Redirect("/cmdb/%s/citypes/%s", cmdb, id)
+	}
+
+	// Send the update data to the API
+	res, err := c.ApiPut(true, fmt.Sprintf("/cmdbs/%s/citypes/%s", cmdb, id), data)
+	c.Check(err)
+
+	// Compute URL of update resource
+	var newUri = oldUri
+	if res.StatusCode == http.StatusMovedPermanently {
+		newUri = res.Header.Get("Location")
+	}
+
+	// Get the new type
+	var updated CITypeModel
+	status, err = c.ApiGetBind(true, newUri, &updated)
+	c.Check(err)
+	if status != http.StatusOK {
+		revel.ERROR.Panicf("Failed to fetch updated resource with: %d", status)
+	}
+
+	if updated.ShortName == original.ShortName {
+		c.Flash.Success("Updated %s", updated.Name)
+		return c.Redirect("/cmdb/%s/citypes/%s", cmdb, original.ShortName)
+	} else {
+		c.Flash.Success("Updated %s (Renamed to %s)", original.Name, updated.Name)
+		return c.Redirect("/cmdb/%s/citypes/%s", cmdb, updated.ShortName)
+	}
+}
