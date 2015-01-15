@@ -55,7 +55,7 @@ function addAttribute() {
 
 function buildAttributeListItem(att, li) {
 	if (! li) {
-		li = $('<li class="list-group-item"><i></i><button class="close">&times;</button><span></span></li>');
+		li = $('<li class="list-group-item"><i></i><button class="close" data-toggle="tooltip" data-placement="right" title="Delete">&times;</button><span></span></li>');
 		li[0].att = att;
 		li.click(function() { setAttribute(att); });
 		$('button', li).click(function() { removeAttribute(att); });
@@ -191,7 +191,11 @@ $(document).ready(function() {
 		ulAtts.append(li);
 	}
 
+	// Select first attribute
 	if (citype.attributes.length > 0) {
 		setAttribute(citype.attributes[0]);
 	}
+
+	// Init tooltips
+	$('[data-toggle="tooltip"]').tooltip();
 });
