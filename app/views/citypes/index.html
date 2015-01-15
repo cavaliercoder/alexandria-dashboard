@@ -1,98 +1,21 @@
-{{set . "title" .citype.Name}}
-{{set . "subtitle" "Edit CI Type"}}
+{{set . "title" "CI Types"}}
+{{set . "subtitle" .cmdb.Name}}
 {{template "header.html" .}}
-
-{{if .citypeJson}}
-<script type="text/javascript">
-	var citype = {{rawjs .citypeJson}};
-	var origCitype = {{rawjs .citypeJson}};
-</script>
-{{end}}
-{{append . "moreScripts" "js/citype.js"}}
-
 {{$cmdb := .cmdb}}
-{{$citype := .citype}}
-
-<div class="row">
-	<div class="col-lg-12">
-		<ul class="nav nav-tabs">
-		  <li class="active"><a href="#tabType" data-toggle="tab">CI Type</a></li>
-		  <li><a href="#tabAttributes" data-toggle="tab">Attributes</a></li>
-		</ul>
-	</div>
-</div>
-<div class="row">
-	<div class="tab-content">
-		<!-- CI Type details tab -->
-		<div class="tab-pane fade in active" id="tabType">
-			<div class="col-lg-8">
-				<!-- CI Type name -->
-				<form action="#" class="form-horizontal">
-					<div class="form-group">
-						<label for="name" class="col-sm-2 control-label">Name</label>
-						<div class="col-sm-10">
-							<input type="text" class="form-control" id="typeName" name="name" value="{{.citype.Name}}" placeholder="CI type name" />
-						</div>
-					</div>
-					<!-- CI Type description -->
-					<div class="form-group">
-						<label for="description" class="col-sm-2 control-label">Description</label>
-						<div class="col-sm-10">
-							<textarea id="typeDesc" name="description" class="form-control" rows="3">{{.citype.Description}}</textarea>
-						</div>
-					</div>
-				</form>
-			</div>
-		</div>
-
-		<!-- Attribute tab -->
-		<div class="tab-pane fade" id="tabAttributes">
-			<!-- Attribute list for current CI Type -->
-			{{if .citype}}
-			<div class="col-lg-3">
-				<ul id="attlist" class="list-group">
-					<li id="newatt" class="list-group-item"><i class="fa fa-fw fa-plus"></i>New</li>
-				</ul>
-			</div>
-			<!-- Attribute editor -->
-			<div class="col-lg-5">
-				<form action="#" class="form-horizontal">
-					<div class="form-group">
-						<label for="name" class="col-sm-2 control-label">Name</label>
-						<div class="col-sm-10">
-							<input type="text" class="form-control" id="attName" name="name" placeholder="CI type name" />
-						</div>
-					</div>
-					<div class="form-group">
-						<label for="type" class="col-sm-2 control-label">Type</label>
-						<div class="col-sm-10">
-							<select name="type" id="attType" class="form-control">
-								<option value="string">String</option>
-								<option value="group">Group</option>
-							</select>
-						</div>
-					</div>
-					<div class="form-group">
-						<label for="description" class="col-sm-2 control-label">Description</label>
-						<div class="col-sm-10">
-							<textarea id="attDesc" name="description" class="form-control" rows="3"></textarea>
-						</div>
-					</div>
-				</form>
-			</div>
-			{{end}}
-		</div>
-	</div>
-</div>
-<div class="row">
-	<div class="col-lg-8">
-		<form class="invisible" method="POST" id="submitForm">
-			<input type="hidden" name="data" id="submitData" />
-		</form>
-		<button class="btn btn-primary pull-right" id="save">Save</button>
-	</div>
-</div>
-
+<table class="table table-hover">
+	<thead>
+		<tr>
+			<th>CI Type</th>
+		</tr>
+	</thead>
+	<tbody>
+		{{range .citypes}}
+		<tr>
+			<td><a href="/cmdb/{{$cmdb.Name}}/citypes/{{.ShortName}}">{{.Name}}</a></td>
+		</tr>
+		{{end}}
+	</tbody>
+</table>
 <!-- Add CI Type modal -->
 <div class="modal fade modal-add-ci-type" tabindex="-1" role="dialog" aria-hidden="true">
   	<div class="modal-dialog ">
@@ -128,28 +51,3 @@
 </div>
 
 {{template "footer.html" .}}
-
-<!-- CI Type list -->
-{{define "nav-side-more" }}
-{{$cmdb := .cmdb}}
-{{$citype := .citype}}
-{{if .citypes}}
-<li>
-    <a data-target="#demo" data-toggle="collapse" href="javascript:;" class="" aria-expanded="true"><i class="fa fa-fw fa-arrows-v"></i> CI Types <i class="fa fa-fw fa-caret-down"></i></a>
-    <ul class="collapse in" id="demo" aria-expanded="true" style="">    
-		{{range .citypes}}
-		<li>
-			{{if eq .Name $citype.Name}}
-			<a href="/cmdb/{{$cmdb.ShortName}}/citypes/{{.ShortName}}" >{{.Name}}</a>
-			{{else}}
-			<a href="/cmdb/{{$cmdb.ShortName}}/citypes/{{.ShortName}}">{{.Name}}</a>
-			{{end}}
-		</li>
-		{{end}}
-		<li>
-			<a href="#" data-toggle="modal" data-target=".modal-add-ci-type">New</a>
-		</li>	
-    </ul>
-</li>
-{{end}}
-{{end}}

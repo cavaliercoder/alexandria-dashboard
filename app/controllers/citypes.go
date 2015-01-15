@@ -28,7 +28,24 @@ type CITypes struct {
 	Controller
 }
 
-func (c CITypes) Index(id string) revel.Result {
+func (c CITypes) Index() revel.Result {
+	cmdb := c.GetContextCmdb()
+
+	// Get CI Types
+	var citypes []CITypeModel
+	status, err := c.ApiGetBind(true, fmt.Sprintf("/cmdbs/%s/citypes", cmdb.ShortName), &citypes)
+	c.Check(err)
+
+	if status != http.StatusOK {
+		revel.ERROR.Panicf("Failed to retrieve CI Types for database %s with: %d", cmdb.Name, status)
+	}
+
+	c.RenderArgs["citypes"] = citypes
+
+	return c.Render()
+}
+
+func (c CITypes) Edit(id string) revel.Result {
 	cmdb := c.GetContextCmdb()
 
 	// Get CI Types
@@ -78,7 +95,7 @@ func (c CITypes) Index(id string) revel.Result {
 	return c.Render()
 }
 
-func (c CITypes) ProcessNew() revel.Result {
+func (c CITypes) Add() revel.Result {
 	var citype CITypeModel
 	citype.Name = c.Params.Get("name")
 	citype.Description = c.Params.Get("description")
@@ -110,7 +127,7 @@ func (c CITypes) ProcessNew() revel.Result {
 	return nil
 }
 
-func (c CITypes) ProcessUpdate(cmdb string, id string, data string) revel.Result {
+func (c CITypes) Update(cmdb string, id string, data string) revel.Result {
 	// Validate request
 	c.Validation.Required(cmdb)
 	c.Validation.Required(id)

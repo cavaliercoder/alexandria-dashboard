@@ -4,8 +4,12 @@
             <a href="/"><i class="fa fa-fw fa-dashboard"></i> Dashboard</a>
         </li>
         <li>
-            <a href="/cmdbs"><i class="fa fa-fw fa-th"></i> Manage CMDBs</a>
-        </li>
-        {{template "nav-side-more" .}}
+    		<a data-target="#demo" data-toggle="collapse" href="javascript:;" class="" aria-expanded="true"><i class="fa fa-fw fa-th"></i> Administration <i class="fa fa-fw fa-caret-down"></i></a>
+    		<ul class="collapse in" id="demo" aria-expanded="true" style="">    
+				<li>
+					<a href="/cmdb/{{.cmdb.ShortName}}/citypes">CI Types</a>
+				</li>
+			</ul>
+		</li>
     </ul>
 </div>

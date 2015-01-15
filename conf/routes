@@ -28,9 +28,9 @@ POST    /cmdbs/new                              Cmdbs.ProcessNew
 GET     /cmdb/:cmdb                             Cmdbs.Get
 
 GET     /cmdb/:cmdb/citypes                     CITypes.Index
-POST    /cmdb/:cmdb/citypes                     CITypes.ProcessNew
-GET     /cmdb/:cmdb/citypes/:id                 CITypes.Index
-POST    /cmdb/:cmdb/citypes/:id                 CITypes.ProcessUpdate
+POST    /cmdb/:cmdb/citypes                     CITypes.Add
+GET     /cmdb/:cmdb/citypes/:id                 CITypes.Edit
+POST    /cmdb/:cmdb/citypes/:id                 CITypes.Update
 
 # Catch all
 # GET     /:controller/:action                    :controller.:action
