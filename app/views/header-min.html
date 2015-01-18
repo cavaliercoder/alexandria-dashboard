@@ -34,12 +34,53 @@
       {{end}}
 
       <style type="text/css">
-        ul.nav-tabs {
-          margin-bottom: 15px;
-        }
+        /* Fix margin on nav tabs */
+        ul.nav-tabs { margin-bottom: 15px; }
         
-        li.list-group-item {
+        /* turn elements into pseudo links */
+        .link { cursor: pointer; }
+
+        /* pretty highlight for list item links */
+        .li-container { display: block; width: 100%; }
+        .li-container:hover { border-right: 2px solid #563d7c; }
+
+        /* Fix control box offsetting */
+        ul.list-unstyled li { margin-top: 1px; min-height: 21px; }
+        ul.list-unstyled li ul { padding-left: 18px; }
+        ul.list-unstyled li.active > span.li-container {
+            border-right: 2px solid #337ab7;
+        }
+
+        /* List item control box */
+        .li-controls {
+          display: none;
+          float: right;
+          margin: 0 2px 0 0q;
+        }
+
+        .li-container:hover .li-controls { display: inline; }
+
+        .li-controls button {
+          background: none repeat scroll 0 0 rgba(0, 0, 0, 0);
+          border: 0 none;
           cursor: pointer;
+          padding: 0;
+          margin: 0 0 0 2px;
+          color: #000;
+          float: right;
+          font-size: 21px;
+          font-weight: 700;
+          line-height: 1;
+          opacity: 0.2;
+          text-shadow: 0 1px 0 #fff;
+          margin: 0 3px 0 0;
+        }
+
+        .li-controls button:hover, .li-controls button:focus {
+          color: #000;
+          cursor: pointer;
+          opacity: 0.5;
+          text-decoration: none;
         }
       </style>
   </head>

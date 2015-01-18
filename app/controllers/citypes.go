@@ -61,25 +61,19 @@ func (c CITypes) Edit(id string) revel.Result {
 
 	// Get selected CI Type
 	var citype *CITypeModel
-	if id == "" {
-		if 0 < len(citypes) {
-			// Select the first by default
-			citype = &citypes[0]
-		}
-	} else {
-		// Find the selected type
-		found := false
-		for _, v := range citypes {
-			if v.ShortName == id {
-				found = true
-				citype = &v
-				break
-			}
-		}
 
-		if !found {
-			return c.NotFound("No such CI Type: %s", id)
+	// Find the selected type
+	found := false
+	for _, v := range citypes {
+		if v.ShortName == id {
+			found = true
+			citype = &v
+			break
 		}
+	}
+
+	if !found {
+		return c.NotFound("No such CI Type: %s", id)
 	}
 
 	// Store the CI type for rendering
@@ -154,8 +148,14 @@ func (c CITypes) Update(cmdb string, id string, data string) revel.Result {
 
 	// Compute URL of update resource
 	var newUri = oldUri
-	if res.StatusCode == http.StatusMovedPermanently {
+
+	switch res.StatusCode {
+	case http.StatusMovedPermanently:
 		newUri = res.Header.Get("Location")
+	case http.StatusNoContent:
+		// Do nothing
+	default:
+		revel.ERROR.Panicf("Failed to fetch updated resource with: %s", res.Status)
 	}
 
 	// Get the new type

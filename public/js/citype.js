@@ -1,3 +1,4 @@
+var attLookup = {};
 var selectedAtt = null;
 
 var inputTypeName = null;
@@ -15,15 +16,60 @@ var buttonSave = null;
 
 var suspendUi = false;
 
-function addAttribute() {
-	//Find next available 'New Attribute' name
+// Build a hash table of attributes with contextual metadata
+function buildMetadata(parent, path) {
+	var atts = parent ? parent.children : citype.attributes;
+
+	for (var i = 0; i < atts.length; i++) {
+		a = atts[i];
+		
+		// Build a path
+		var newPath = path + a.shortName;
+
+		// Build metadata
+		a._parent = parent;
+		a._path = newPath;
+		a._li = buildAttributeListItem(a);
+
+		// Add attribute to hash table
+		attLookup[newPath] = a;
+
+		// Drill down into children
+		if(a.children.length) {
+			buildMetadata(a, newPath + '.');
+		}
+	}
+}
+
+function getShortName(name) {
+	name = name.toLowerCase();
+	name = name.replace(/ +/, '-');
+	name = name.replace(/[^a-z0-9\-_]+/, '');
+	name = name.replace(/-{2,}/,'-');
+
+	return name;
+}
+
+function getPath(att) {
+	for (var path in attLookup) {
+		if (attLookup[path] == att) {
+			return att._path;
+		}
+	}
+	return null;
+}
+
+function addAttribute(parent) {
+	var atts = parent ? parent.children : citype.attributes;
+console.log(parent);
+	// Find next available 'New Attribute' name
 	var name = 'New Attribute';
 	for (i = 1; i < 1024; i++) {
 		var test = name;
 		if (i > 1) test += ' ' + i;
 		var matched = false;
-		for (a = 0; a < citype.attributes.length; a++) {
-			if (citype.attributes[a].name == test) {
+		for (a = 0; a < atts.length; a++) {
+			if (atts[a].name == test) {
 				matched = true;
 			}
 		}
@@ -35,17 +81,33 @@ function addAttribute() {
 	}
 
 	// Add a basic attribute
+	var shortName = getShortName(name);
 	var att = {
 		"name" : name,
+		"shortName" : shortName,
 		"description": "",
-		"type": "string"
+		"type": "string",
+		"children": [],
+		"_parent": parent,
+		"_path": parent ? parent._path + '.' + shortName : shortName
 	};
-	citype.attributes.push(att);
 
-	// Add a list item
-	liAtt = buildAttributeListItem(att, null);
-	ulAtts.append(liAtt);
+	// Create a UI list item
+	att._li = buildAttributeListItem(att, null);
 
+	// Wire it in
+	if(parent) {
+		// Append to parent attribute
+		parent.children.push(att);
+		$('>ul.li-sublist', parent._li).append(att._li);
+	} else {
+		// Append to CI Type
+		citype.attributes.push(att);
+		ulAtts.append(att._li);
+	}
+
+	// Select the attribute in the UI
+	liAtt = att._li;
 	setAttribute(att);
 
 	// Send user focus to the attribute name field
@@ -53,46 +115,89 @@ function addAttribute() {
 	inputAttName.select();
 }
 
-function buildAttributeListItem(att, li) {
-	if (! li) {
-		li = $('<li class="list-group-item"><i></i><button class="close" data-toggle="tooltip" data-placement="right" title="Delete">&times;</button><span></span></li>');
-		li[0].att = att;
-		li.click(function() { setAttribute(att); });
-		$('button', li).click(function() { removeAttribute(att); });
+function buildAttributeListItem(att) {
+	var container = $('> .li-container', att._li);
+	var title = $('.li-title', container);
+	var icon = $('.li-icon', container);
+	var controls = $('.li-controls', container);
+	var btnDelete = $('.li-delete', controls);
+	var btnAdd = $('.li-add', controls);
+	var ulChildren = $('>ul.li-sublist', att._li);
+
+	if (! att._li) {
+		// Create list item
+		att._li = $('<li></li>');
+		container = $('<span class="li-container link"></span>').appendTo(att._li);
+		container.append($('<div class="clearfix"></div>'));
+		icon = $('<i class="li-icon"></i>').appendTo(container);
+		title = $('<span class="li-title"></span>').appendTo(container);
+		controls = $('<span class="li-controls"></span>').appendTo(container);
+
+		// Delete button
+		btnDelete = $('<button class="close li-delete" data-toggle="tooltip" title="Delete">&times;</button>')
+			.appendTo(controls);
+		btnDelete.click(function() { removeAttribute(att); });
+
+		// Attach attribute to DOM
+		att._li[0].att = att;
+
+		// Wire up events
+		container.click(function() { setAttribute(att); });
 	}
 
-	li.attr('title', att.description);
-	li.children('span').html('&nbsp;' + att.name);
+	// Update title
+	title.html('&nbsp;' + att.name);
 	
-	// Create attribute list item
-	var icon = 'unchecked';
+	// Update icon
+	var iconClass = 'unchecked';
 	switch(att.type) {
 		case 'string' :
-			icon = 'align-justify';
+			iconClass = 'align-justify';
 			break;
 
 		case 'group' :
-			icon = 'chevron-right';
+			iconClass = 'chevron-right';
 			break;
 	}
 
-	li.children('i').removeClass();
-	li.children('i').addClass('glyphicon glyphicon-' + icon);
+	icon.removeClass().addClass('li-icon glyphicon glyphicon-' + iconClass);
 
-	return li;
+	// Add/remove 'add child' button
+	if (att.type == 'group') {
+		if (! btnAdd.length) {
+			btnAdd = $('<button class="btn li-add" data-toggle="tooltip" data-original-title="Add child">&plus;</button>')
+				.appendTo($('span.li-controls', att._li));
+			btnAdd.click(function() { addAttribute(att); });
+		}
+
+		if (! ulChildren.length) {
+			ulChildren = $('<ul class="li-sublist list-unstyled"></ul>')
+				.appendTo(att._li);
+		}
+	} else {
+		// Ensure group controls are cleaned up
+		btnAdd.remove();
+		ulChildren.remove();
+	}
+
+	console.log(att._li.length);
+
+	return att._li;
 }
 
 function removeAttribute(att) {
-	// find the attribute in citype
-	for (i = 0; i < citype.attributes.length; i++) {
-		if (att == citype.attributes[i]) {
-			citype.attributes.splice(i, 1);
+	console.log("delete");
+	// remove attribute from parent
+	var atts = att._parent ? att._parent.children : citype.attributes;
+	for (i = 0; i < atts.length; i++) {
+		if (att == atts[i]) {
+			atts.splice(i, 1);
 			break;
 		}
 	}
 
-	li = getAttListItem(att);
-	li.remove();
+	// remove list item from ui
+	att._li.remove();
 }
 
 function setAttribute(att) {
@@ -101,7 +206,7 @@ function setAttribute(att) {
 	selectedAtt = att;
 
 	// Select the matching list item
-	liAtt = getAttListItem(att);
+	liAtt = att._li;
 
 	// update the editor form
 	inputAttName.val(att.name);
@@ -109,23 +214,10 @@ function setAttribute(att) {
 	selectAttType.val(att.type);
 
 	// Update the active list item
-	ulAtts.children('li').removeClass('active');
+	$('li', ulAtts).removeClass('active');
 	liAtt.addClass('active');
 
 	suspendUi = false;
-}
-
-function getAttListItem(att) {
-	// select the correct list item
-	var result = null;
-	ulAtts.children('li').each(function(i, li) {
-		if (li.att == att) {
-			result = $(li);
-			return;
-		}
-	});
-
-	return result;
 }
 
 function updateCitype() {
@@ -144,19 +236,52 @@ function updateCitype() {
 		att.type = selectAttType.val();
 
 		// Update the list item with the attribute data
-		li = getAttListItem(att);
-		buildAttributeListItem(att, li);
+		buildAttributeListItem(att);
 	}
 }
 
-function commitCitype() {
-	submitData.val(JSON.stringify(citype));
-    submitForm.submit();
+function updateAttType() {
+	if (selectAttType.val() != 'group') {
+		selectedAtt.children = [];
+		$('ul', selectedAtt._li).remove();
+	}
 
+	updateCitype();
+}
+
+function commitCitype() {
+	// Filter out ._* metadata attributes
+	var filter = function(key, val) {
+		if (key.match(/^_/))
+			return undefined;
+		return val;
+	};
+
+	// Convert citype to JSON string
+	submitData.val(JSON.stringify(citype, filter));
+
+	// To the cloud
+    submitForm.submit();
 	return false;
 }
 
+function buildAttTree(attributes, list, path) {
+	for (var i = 0; i < attributes.length; i++) {
+		a = attributes[i];
+		list.append(a._li);
+
+		if (a.children.length) {
+			var ul = $('ul.li-sublist', a._li);
+
+			buildAttTree(a.children, ul, path + a.shortName + '.');
+		}
+	}
+}
+
 $(document).ready(function() {
+	// Init CI Type data
+	buildMetadata(null, '');
+
 	// Declare DOM elements
 	ulAtts = $('#attlist');
 	liNewAtt = $('#newatt');
@@ -173,23 +298,18 @@ $(document).ready(function() {
 	buttonSave = $('#save');
 
 	// Wire up DOM events
-	liNewAtt.click(addAttribute);
+	liNewAtt.click(function() { addAttribute(null); });
 
 	inputTypeName.change(updateCitype);
 	inputTypeDescription.change(updateCitype);
 	inputAttName.change(updateCitype);
 	inputAttDescription.change(updateCitype);
-	selectAttType.change(updateCitype);
+	selectAttType.change(updateAttType);
 	
 	buttonSave.click(commitCitype);
 	
-	
 	// Display initial details
-	for (i = 0; i < citype.attributes.length; i++) {
-		att = citype.attributes[i];
-		li = buildAttributeListItem(att, null);
-		ulAtts.append(li);
-	}
+	buildAttTree(citype.attributes, ulAtts, '');
 
 	// Select first attribute
 	if (citype.attributes.length > 0) {
