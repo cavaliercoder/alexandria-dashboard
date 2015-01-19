@@ -2,6 +2,7 @@
 {{set . "subtitle" .cmdb.Name}}
 {{template "header.html" .}}
 {{$cmdb := .cmdb}}
+<a href="#" data-toggle="modal" data-target=".modal-add-ci-type">New</a>
 <table class="table table-hover">
 	<thead>
 		<tr>
@@ -11,11 +12,12 @@
 	<tbody>
 		{{range .citypes}}
 		<tr>
-			<td><a href="/cmdb/{{$cmdb.Name}}/citypes/{{.ShortName}}">{{.Name}}</a></td>
+			<td><a href="/cmdb/{{$cmdb.ShortName}}/citypes/{{.ShortName}}">{{.Name}}</a></td>
 		</tr>
 		{{end}}
 	</tbody>
 </table>
+
 <!-- Add CI Type modal -->
 <div class="modal fade modal-add-ci-type" tabindex="-1" role="dialog" aria-hidden="true">
   	<div class="modal-dialog ">
@@ -25,7 +27,7 @@
 				<h4 class="modal-title">New CI Type</h4>
 			</div>
 			<div class="modal-body">
-				<form method="POST" action="/cmdb/{{.cmdb.Name}}/citypes" class="form-horizontal">
+				<form method="POST" action="/cmdb/{{.cmdb.ShortName}}/citypes" class="form-horizontal">
 					<div class="form-group">
 						<label for="name" class="col-sm-2 control-label">Name</label>
 						<div class="col-sm-10">

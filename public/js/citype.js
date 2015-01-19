@@ -311,8 +311,10 @@ $(document).ready(function() {
 	// Display initial details
 	buildAttTree(citype.attributes, ulAtts, '');
 
-	// Select first attribute
-	if (citype.attributes.length > 0) {
+	// Select first or create an attribute
+	if (citype.attributes.length === 0) {
+		addAttribute(null);
+	} else {
 		setAttribute(citype.attributes[0]);
 	}
 

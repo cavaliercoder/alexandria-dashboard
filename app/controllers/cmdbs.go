@@ -20,7 +20,6 @@ package controllers
 import (
 	"github.com/revel/revel"
 	"net/http"
-	"regexp"
 )
 
 type Cmdbs struct {
@@ -56,7 +55,6 @@ func (c Cmdbs) ProcessNew() revel.Result {
 
 	// Validate params
 	c.Validation.Required(cmdb.Name)
-	c.Validation.Match(cmdb.Name, regexp.MustCompile("^[a-zA-Z0-9-_]+$"))
 	if c.Validation.HasErrors() {
 		c.Validation.Keep()
 		c.FlashParams()

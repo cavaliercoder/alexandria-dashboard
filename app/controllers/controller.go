@@ -291,7 +291,7 @@ func (c Controller) GetCmdb(cmdbName string) *CmdbModel {
 	}
 
 	for _, cmdb := range authContext.Cmdbs {
-		if cmdb.Name == cmdbName {
+		if cmdb.ShortName == cmdbName {
 			c.Session["cmdb"] = cmdbName
 			return &cmdb
 		}
