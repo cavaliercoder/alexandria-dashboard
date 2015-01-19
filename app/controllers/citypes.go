@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"github.com/revel/revel"
 	"net/http"
+	"regexp"
 )
 
 type CITypes struct {
@@ -108,8 +109,13 @@ func (c CITypes) Add() revel.Result {
 	c.Check(err)
 	switch res.StatusCode {
 	case http.StatusCreated:
+		// Get the CI Type short name from the returned location header
+		location := res.Header.Get("Location")
+		re := regexp.MustCompile("[^/]*$")
+		shortname := re.FindString(location)
+
 		c.Flash.Success("Created %s", citype.Name)
-		return c.Redirect("/cmdb/%s/citypes/%s", cmdb.ShortName, citype.ShortName)
+		return c.Redirect("/cmdb/%s/citypes/%s", cmdb.ShortName, shortname)
 
 	case http.StatusConflict:
 		c.Flash.Error("CI type '%s' already exists", citype.Name)
