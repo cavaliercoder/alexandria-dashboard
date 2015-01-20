@@ -137,7 +137,9 @@ func (c Auth) ValidateLogin(username string, password string) revel.Result {
 		"password": password,
 	}
 	res, err := c.ApiPost(false, "/apikey", body)
-	c.Check(err)
+	if err != ApiAuthError {
+		c.Check(err)
+	}
 
 	// Parse the response
 	switch res.StatusCode {
