@@ -107,7 +107,6 @@ function addAttribute(parent) {
 	}
 
 	// Select the attribute in the UI
-	liAtt = att._li;
 	setAttribute(att);
 
 	// Send user focus to the attribute name field
@@ -136,13 +135,13 @@ function buildAttributeListItem(att) {
 		// Delete button
 		btnDelete = $('<button class="close li-delete" data-toggle="tooltip" title="Delete">&times;</button>')
 			.appendTo(controls);
-		btnDelete.click(function() { removeAttribute(att); });
+		btnDelete.click(function() { removeAttribute(att); return false; });
 
 		// Attach attribute to DOM
 		att._li[0].att = att;
 
 		// Wire up events
-		container.click(function() { setAttribute(att); });
+		container.click(function() { setAttribute(att); return false; });
 	}
 
 	// Update title
@@ -167,7 +166,7 @@ function buildAttributeListItem(att) {
 		if (! btnAdd.length) {
 			btnAdd = $('<button class="btn li-add" data-toggle="tooltip" data-original-title="Add child">&plus;</button>')
 				.appendTo($('span.li-controls', att._li));
-			btnAdd.click(function() { addAttribute(att); });
+			btnAdd.click(function() { addAttribute(att); return false; });
 		}
 
 		if (! ulChildren.length) {
@@ -200,9 +199,8 @@ function removeAttribute(att) {
 function setAttribute(att) {
 	suspendUi = true;
 
+	// Set current attribute variables
 	selectedAtt = att;
-
-	// Select the matching list item
 	liAtt = att._li;
 
 	// update the editor form
