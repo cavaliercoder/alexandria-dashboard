@@ -61,7 +61,7 @@ function getPath(att) {
 
 function addAttribute(parent) {
 	var atts = parent ? parent.children : citype.attributes;
-console.log(parent);
+
 	// Find next available 'New Attribute' name
 	var name = 'New Attribute';
 	for (i = 1; i < 1024; i++) {
@@ -180,13 +180,10 @@ function buildAttributeListItem(att) {
 		ulChildren.remove();
 	}
 
-	console.log(att._li.length);
-
 	return att._li;
 }
 
 function removeAttribute(att) {
-	console.log("delete");
 	// remove attribute from parent
 	var atts = att._parent ? att._parent.children : citype.attributes;
 	for (i = 0; i < atts.length; i++) {
