@@ -64,4 +64,23 @@ type CITypeAttributeModel struct {
 	Description string                 `json:"description"`
 	Type        string                 `json:"type"`
 	Children    []CITypeAttributeModel `json:"children"`
+
+	// Common Options
+	Required bool `json:"required,omitempty"`
+	IsArray  bool `json:"isArray,omitempty"`
+
+	// Group options
+	Singular string `json:"singular,omitempty"`
+
+	// String options
+	MinLength uint     `json:"minLength,omitempty"`
+	MaxLength uint     `json:"maxLength,omitempty"`
+	Filters   []string `json:"filters,omitempty"`
+
+	// Number options
+	Units    string `json:"units,omitempty"`
+	MinValue int    `json:"minValue,omitempty"`
+	MaxValue int    `json:"maxValue,omitempty"`
+	Signed   bool   `json:"signed,omitempty"`
+	Float    bool   `json:"float,omitempty"`
 }

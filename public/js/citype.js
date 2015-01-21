@@ -5,10 +5,13 @@ var inputTypeName = null;
 var inputTypeDescription = null;
 var ulAtts = null;
 var liNewAtt = null;
-var liAtt = null;
 var inputAttName = null;
 var inputAttDescription = null;
 var selectAttType = null;
+
+var editGroup = null;
+var inputGroupArray = null;
+var inputGroupSingular = null;
 
 var submitForm = null;
 var submitData = null;
@@ -201,18 +204,50 @@ function setAttribute(att) {
 
 	// Set current attribute variables
 	selectedAtt = att;
-	liAtt = att._li;
 
 	// update the editor form
 	inputAttName.val(att.name);
 	inputAttDescription.val(att.description);
 	selectAttType.val(att.type);
 
+	showControlGroup(att.type);
+	
+	switch(att.type) {
+		case "string":
+			break;
+
+		case "group":
+			if (att.isArray) {
+				inputGroupArray.prop('checked', true);
+				inputGroupSingular.val(att.singular);
+				inputGroupSingular.show();
+			}
+
+			break;
+	}
+
 	// Update the active list item
 	$('li', ulAtts).removeClass('active');
-	liAtt.addClass('active');
+	att._li.addClass('active');
 
 	suspendUi = false;
+}
+
+function showControlGroup(attType) {
+
+	// Reset edit controls
+	editString.hide();
+
+	editGroup.hide();
+	inputGroupSingular.hide();
+	inputGroupArray.prop('checked', false);
+	inputGroupSingular.val('');	
+
+	switch(attType) {
+		case "group":
+			editGroup.show();
+			break;
+	}
 }
 
 function updateCitype() {
@@ -224,11 +259,18 @@ function updateCitype() {
 	citype.name = inputTypeName.val();
 	citype.description = inputTypeDescription.val();
 
-	// Update the attribute with form data
+	// Update the selected attribute with form data
 	if (att) {
 		att.name = inputAttName.val();
 		att.description = inputAttDescription.val();
 		att.type = selectAttType.val();
+
+		switch(att.type) {
+			case "group":
+				att.isArray = inputGroupArray.is(':checked');
+				att.singular = att.isArray ? inputGroupSingular.val() : null;
+				break;
+		}
 
 		// Update the list item with the attribute data
 		buildAttributeListItem(att);
@@ -236,10 +278,15 @@ function updateCitype() {
 }
 
 function updateAttType() {
-	if (selectAttType.val() != 'group') {
+	var type = selectAttType.val();
+
+	if (type != 'group') {
+		// remove any children if it's not a group
 		selectedAtt.children = [];
 		$('ul', selectedAtt._li).remove();
 	}
+
+	showControlGroup(type);
 
 	updateCitype();
 }
@@ -257,6 +304,7 @@ function commitCitype() {
 
 	// To the cloud
     submitForm.submit();
+
 	return false;
 }
 
@@ -288,19 +336,39 @@ $(document).ready(function() {
 	inputAttDescription = $('#attDesc');
 	selectAttType = $('#attType');
 
+	editGroup = $('#editGroup');
+	inputGroupArray = $('#inputGroupArray');
+	inputGroupSingular = $('#inputGroupSingular');
+
+	editString = $('#editString');
+
 	submitForm = $('#submitForm');
 	submitData = $('#submitData');
 	buttonSave = $('#save');
 
 	// Wire up DOM events
 	liNewAtt.click(function() { addAttribute(null); });
-
 	inputTypeName.change(updateCitype);
 	inputTypeDescription.change(updateCitype);
 	inputAttName.change(updateCitype);
 	inputAttDescription.change(updateCitype);
 	selectAttType.change(updateAttType);
 	
+	inputGroupArray.change(function() {
+		suspendUi = true;
+		if(inputGroupArray.is(':checked')) {
+			inputGroupSingular.show();
+		} else {
+			inputGroupSingular.hide();
+			inputGroupSingular.val('');
+		}
+		suspendUi = false;
+
+		updateCitype();
+		return false;
+	});
+	inputGroupSingular.change(updateCitype);
+
 	buttonSave.click(commitCitype);
 	
 	// Display initial details

@@ -152,16 +152,15 @@ func (c CITypes) Update(cmdb string, id string, data string) revel.Result {
 	res, err := c.ApiPut(true, fmt.Sprintf("/cmdbs/%s/citypes/%s", cmdb, id), data)
 	c.Check(err)
 
-	// Compute URL of update resource
+	// Compute URL of updated resource
 	var newUri = oldUri
-
 	switch res.StatusCode {
-	case http.StatusMovedPermanently:
-		newUri = res.Header.Get("Location")
 	case http.StatusNoContent:
 		// Do nothing
+	case http.StatusMovedPermanently:
+		newUri = res.Header.Get("Location")
 	default:
-		revel.ERROR.Panicf("Failed to fetch updated resource with: %s", res.Status)
+		revel.ERROR.Panicf("Failed to update resource with: %s", res.Status)
 	}
 
 	// Get the new type
@@ -172,6 +171,7 @@ func (c CITypes) Update(cmdb string, id string, data string) revel.Result {
 		revel.ERROR.Panicf("Failed to fetch updated resource with: %d", status)
 	}
 
+	// Redirect to the updated resource
 	if updated.ShortName == original.ShortName {
 		c.Flash.Success("Updated %s", updated.Name)
 		return c.Redirect("/cmdb/%s/citypes/%s", cmdb, original.ShortName)
