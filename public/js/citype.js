@@ -184,6 +184,10 @@ function buildAttributeListItem(att) {
 			iconClass = 'check-square-o';
 			break;
 
+		case 'timestamp':
+			iconClass = 'calendar';
+			break;
+
 		case 'group' :
 			iconClass = 'chevron-right';
 			break;
