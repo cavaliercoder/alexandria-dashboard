@@ -166,11 +166,11 @@ function buildAttributeListItem(att) {
 	var iconClass = 'unchecked';
 	switch(att.type) {
 		case 'string' :
-			iconClass = 'font';
+			iconClass = 'file-text-o';
 			break;
 
 		case 'boolean' :
-			iconClass = 'check';
+			iconClass = 'check-square-o';
 			break;
 
 		case 'group' :
@@ -178,7 +178,7 @@ function buildAttributeListItem(att) {
 			break;
 	}
 
-	icon.removeClass().addClass('li-icon glyphicon glyphicon-' + iconClass);
+	icon.removeClass().addClass('li-icon fa fa-' + iconClass);
 
 	// Add/remove 'add child' button
 	if (att.type == 'group') {
