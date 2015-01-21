@@ -68,6 +68,8 @@ type CITypeAttributeModel struct {
 	// Common Options
 	Required bool `json:"required,omitempty"`
 	IsArray  bool `json:"isArray,omitempty"`
+	MinCount int  `json:"minCount,omitempty"`
+	MaxCount int  `json:"maxCount,omitempty"`
 
 	// Group options
 	Singular string `json:"singular,omitempty"`

@@ -8,10 +8,19 @@ var liNewAtt = null;
 var inputAttName = null;
 var inputAttDescription = null;
 var selectAttType = null;
+var inputAttRequired = null;
+
+var editArray = null;
+var inputAttMinCount = null;
+var inputAttMaxCount = null;
 
 var editGroup = null;
-var inputGroupArray = null;
 var inputGroupSingular = null;
+
+var editString = null;
+var inputStringRequired = null;
+var inputStringMinLength = null;
+var inputStringMaxLength = null;
 
 var submitForm = null;
 var submitData = null;
@@ -38,7 +47,7 @@ function buildMetadata(parent, path) {
 		attLookup[newPath] = a;
 
 		// Drill down into children
-		if(a.children.length) {
+		if(a.children && a.children.length) {
 			buildMetadata(a, newPath + '.');
 		}
 	}
@@ -63,6 +72,9 @@ function getPath(att) {
 }
 
 function addAttribute(parent) {
+	if (parent && ! parent.children)
+		parent.children = [];
+
 	var atts = parent ? parent.children : citype.attributes;
 
 	// Find next available 'New Attribute' name
@@ -208,17 +220,25 @@ function setAttribute(att) {
 	// update the editor form
 	inputAttName.val(att.name);
 	inputAttDescription.val(att.description);
+	inputAttRequired.prop('checked', att.required ? true : false);
 	selectAttType.val(att.type);
 
+	// reset controls
 	showControlGroup(att.type);
+
+	// Update array editor
+	inputAttArray.prop('checked', att.isArray ? true : false);
+	inputAttMinCount.val(att.minCount);
+	inputAttMaxCount.val(att.maxCount);
 	
 	switch(att.type) {
 		case "string":
+			inputStringMinLength.val(att.minLength);
+			inputStringMaxLength.val(att.maxLength);
 			break;
 
 		case "group":
 			if (att.isArray) {
-				inputGroupArray.prop('checked', true);
 				inputGroupSingular.val(att.singular);
 				inputGroupSingular.show();
 			}
@@ -235,17 +255,31 @@ function setAttribute(att) {
 
 function showControlGroup(attType) {
 
-	// Reset edit controls
-	editString.hide();
+	// Reset array controls
+	editArray.hide();
+	inputAttArray.prop('checked', false);
+	inputAttMinCount.val('');
+	inputAttMaxCount.val('');
 
+	// Reset string controls
+	editString.hide();
+	inputStringMinLength.val('');
+	inputStringMaxLength.val('');
+
+	// Reset group controls
 	editGroup.hide();
 	inputGroupSingular.hide();
-	inputGroupArray.prop('checked', false);
 	inputGroupSingular.val('');	
 
 	switch(attType) {
 		case "group":
+			editArray.show();
 			editGroup.show();
+			break;
+
+		case "string":
+			editArray.show();
+			editString.show();
 			break;
 	}
 }
@@ -264,11 +298,21 @@ function updateCitype() {
 		att.name = inputAttName.val();
 		att.description = inputAttDescription.val();
 		att.type = selectAttType.val();
+		att.required = inputAttRequired.is(':checked');
 
 		switch(att.type) {
 			case "group":
-				att.isArray = inputGroupArray.is(':checked');
-				att.singular = att.isArray ? inputGroupSingular.val() : null;
+				att.isArray = inputAttArray.is(':checked');
+				att.minCount = att.isArray ? parseInt(inputAttMinCount.val()) : undefined;
+				att.maxCount = att.isArray ? parseInt(inputAttMaxCount.val()) : undefined;
+				att.singular = att.isArray ? inputGroupSingular.val() : undefined;
+				break;
+			case "string":
+				att.isArray = inputAttArray.is(':checked');
+				att.minCount = att.isArray ? parseInt(inputAttMinCount.val()) : undefined;
+				att.maxCount = att.isArray ? parseInt(inputAttMaxCount.val()) : undefined;
+				att.minLength = parseInt(inputStringMinLength.val());
+				att.maxLength = parseInt(inputStringMaxLength.val());
 				break;
 		}
 
@@ -313,7 +357,7 @@ function buildAttTree(attributes, list, path) {
 		a = attributes[i];
 		list.append(a._li);
 
-		if (a.children.length) {
+		if (a.children && a.children.length) {
 			var ul = $('ul.li-sublist', a._li);
 
 			buildAttTree(a.children, ul, path + a.shortName + '.');
@@ -334,13 +378,21 @@ $(document).ready(function() {
 
 	inputAttName = $('#attName');
 	inputAttDescription = $('#attDesc');
+	inputAttRequired = $('#inputAttRequired');
 	selectAttType = $('#attType');
 
+	editArray = $('#editArray');
+	inputAttArray = $('#inputAttArray');
+	inputAttMinCount = $('#inputAttMinCount');
+	inputAttMaxCount = $('#inputAttMaxCount');
+
 	editGroup = $('#editGroup');
-	inputGroupArray = $('#inputGroupArray');
 	inputGroupSingular = $('#inputGroupSingular');
 
 	editString = $('#editString');
+	inputStringRequired = $('#inputStringRequired');
+	inputStringMinLength = $('#inputStringMinLength');
+	inputStringMaxLength = $('#inputStringMaxLength');
 
 	submitForm = $('#submitForm');
 	submitData = $('#submitData');
@@ -352,24 +404,39 @@ $(document).ready(function() {
 	inputTypeDescription.change(updateCitype);
 	inputAttName.change(updateCitype);
 	inputAttDescription.change(updateCitype);
+	inputAttRequired.change(updateCitype);
+	inputAttMinCount.change(updateCitype);
+	inputAttMaxCount.change(updateCitype);
+
 	selectAttType.change(updateAttType);
-	
-	inputGroupArray.change(function() {
+
+	buttonSave.click(commitCitype);
+
+	inputAttArray.change(function() {
 		suspendUi = true;
-		if(inputGroupArray.is(':checked')) {
-			inputGroupSingular.show();
-		} else {
-			inputGroupSingular.hide();
-			inputGroupSingular.val('');
+
+		// Special consideration for showing group controls
+		if(selectedAtt.type == "group") {
+			if(inputAttArray.is(':checked')) {
+				inputGroupSingular.show();
+			} else {
+				inputGroupSingular.hide();
+				inputGroupSingular.val('');
+			}
 		}
+
 		suspendUi = false;
 
 		updateCitype();
 		return false;
 	});
-	inputGroupSingular.change(updateCitype);
 
-	buttonSave.click(commitCitype);
+	// String edit controls
+	inputStringMinLength.change(updateCitype);
+	inputStringMaxLength.change(updateCitype);
+
+	// Group edit controls
+	inputGroupSingular.change(updateCitype);
 	
 	// Display initial details
 	buildAttTree(citype.attributes, ulAtts, '');
