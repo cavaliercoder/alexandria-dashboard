@@ -1,6 +1,8 @@
 var attLookup = {};
 var selectedAtt = null;
 
+var attributeEditor = null;
+
 var inputTypeName = null;
 var inputTypeDescription = null;
 var ulAtts = null;
@@ -220,41 +222,44 @@ function setAttribute(att) {
 
 	// Set current attribute variables
 	selectedAtt = att;
+		attributeEditor.fadeOut(200, function() {
 
-	// update the editor form
-	inputAttName.val(att.name);
-	inputAttDescription.val(att.description);
-	inputAttRequired.prop('checked', att.required ? true : false);
-	selectAttType.val(att.type);
+		// update the editor form
+		inputAttName.val(att.name);
+		inputAttDescription.val(att.description);
+		inputAttRequired.prop('checked', att.required ? true : false);
+		selectAttType.val(att.type);
 
-	// reset controls
-	showControlGroup(att.type);
+		// reset controls
+		showControlGroup(att.type);
 
-	// Update array editor
-	inputAttArray.prop('checked', att.isArray ? true : false);
-	inputAttMinCount.val(att.minCount);
-	inputAttMaxCount.val(att.maxCount);
-	
-	switch(att.type) {
-		case "string":
-			inputStringMinLength.val(att.minLength);
-			inputStringMaxLength.val(att.maxLength);
-			break;
+		// Update array editor
+		inputAttArray.prop('checked', att.isArray ? true : false);
+		inputAttMinCount.val(att.minCount);
+		inputAttMaxCount.val(att.maxCount);
+		
+		switch(att.type) {
+			case "string":
+				inputStringMinLength.val(att.minLength);
+				inputStringMaxLength.val(att.maxLength);
+				break;
 
-		case "group":
-			if (att.isArray) {
-				inputGroupSingular.val(att.singular);
-				inputGroupSingular.show();
-			}
+			case "group":
+				if (att.isArray) {
+					inputGroupSingular.val(att.singular);
+					inputGroupSingular.show();
+				}
 
-			break;
-	}
+				break;
+		}
 
-	// Update the active list item
-	$('li', ulAtts).removeClass('active');
-	att._li.addClass('active');
+		// Update the active list item
+		$('li', ulAtts).removeClass('active');
+		att._li.addClass('active');
 
-	suspendUi = false;
+		attributeEditor.fadeIn(200);
+		suspendUi = false;
+	});
 }
 
 function showControlGroup(attType) {
@@ -376,6 +381,8 @@ $(document).ready(function() {
 	// Declare DOM elements
 	ulAtts = $('#attlist');
 	liNewAtt = $('#newatt');
+
+	attributeEditor = $('#attributeEditor');
 
 	inputTypeName = $('#typeName');
 	inputTypeDescription = $('#typeDesc');

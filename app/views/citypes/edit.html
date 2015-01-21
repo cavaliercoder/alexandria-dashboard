@@ -56,12 +56,18 @@
 				</ul>
 			</div>
 			<!-- Attribute editor -->
-			<div class="col-lg-9">
+			<div class="col-lg-9" id="attributeEditor">
 				<form action="#" class="form-horizontal">
 					<div class="form-group">
 						<label for="name" class="col-sm-2 control-label">Name</label>
 						<div class="col-sm-10">
 							<input type="text" class="form-control" id="attName" name="name" placeholder="CI type name" />
+						</div>
+					</div>
+					<div class="form-group">
+						<label for="description" class="col-sm-2 control-label">Description</label>
+						<div class="col-sm-10">
+							<textarea id="attDesc" name="description" class="form-control" rows="3"></textarea>
 						</div>
 					</div>
 					<div class="form-group">
@@ -119,13 +125,6 @@
 						<label for="singular" class="col-sm-2 control-label">Singular name</label>
 						<div class="col-sm-9">
 							<input type="text" class="form-control" id="inputGroupSingular" placeholder="Singleton name" style="display: none"/>
-						</div>
-					</div>
-
-					<div class="form-group">
-						<label for="description" class="col-sm-2 control-label">Description</label>
-						<div class="col-sm-10">
-							<textarea id="attDesc" name="description" class="form-control" rows="3"></textarea>
 						</div>
 					</div>
 				</form>
