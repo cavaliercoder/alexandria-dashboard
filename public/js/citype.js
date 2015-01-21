@@ -16,6 +16,11 @@ var editArray = null;
 var inputAttMinCount = null;
 var inputAttMaxCount = null;
 
+var editNumber = null;
+var inputNumberUnits = null;
+var inputNumberMinValue = null;
+var inputNumberMaxValue = null;
+
 var editGroup = null;
 var inputGroupSingular = null;
 
@@ -171,6 +176,10 @@ function buildAttributeListItem(att) {
 			iconClass = 'file-text-o';
 			break;
 
+		case 'number' :
+			iconClass = 'sliders';
+			break;
+
 		case 'boolean' :
 			iconClass = 'check-square-o';
 			break;
@@ -270,6 +279,12 @@ function setAttribute(att) {
 				}
 
 				break;
+
+			case "number":
+				inputNumberUnits.val(att.units);
+				inputNumberMinValue.val(att.minValue);
+				inputNumberMaxValue.val(att.maxValue);
+				break;
 		}
 
 		// Update the active list item
@@ -294,6 +309,12 @@ function showControlGroup(attType) {
 	inputStringMinLength.val('');
 	inputStringMaxLength.val('');
 
+	// Reset number controls
+	editNumber.hide();
+	inputNumberUnits.val('');
+	inputNumberMinValue.val('');
+	inputNumberMaxValue.val('');
+
 	// Reset group controls
 	editGroup.hide();
 	inputGroupSingular.hide();
@@ -308,6 +329,11 @@ function showControlGroup(attType) {
 		case "string":
 			editArray.show();
 			editString.show();
+			break;
+
+		case "number":
+			editArray.show();
+			editNumber.show();
 			break;
 	}
 }
@@ -328,6 +354,17 @@ function updateCitype() {
 		att.type = selectAttType.val();
 		att.required = inputAttRequired.is(':checked');
 
+		// reset type specific attributes
+		delete(att.isArray);
+		delete(att.minCount);
+		delete(att.maxCount);
+		delete(att.singular);
+		delete(att.minLength);
+		delete(att.maxLength);
+		delete(att.units);
+		delete(att.minValue);
+		delete(att.maxValue);
+
 		switch(att.type) {
 			case "group":
 				att.isArray = inputAttArray.is(':checked');
@@ -342,6 +379,13 @@ function updateCitype() {
 				att.minLength = parseInt(inputStringMinLength.val());
 				att.maxLength = parseInt(inputStringMaxLength.val());
 				break;
+			case "number":
+				att.isArray = inputAttArray.is(':checked');
+				att.minCount = att.isArray ? parseInt(inputAttMinCount.val()) : undefined;
+				att.maxCount = att.isArray ? parseInt(inputAttMaxCount.val()) : undefined;
+				att.units = inputNumberUnits.val();
+				att.minValue = parseFloat(inputNumberMinValue.val());
+				att.maxValue = parseFloat(inputNumberMaxValue.val());
 		}
 
 		// Update the list item with the attribute data
@@ -424,6 +468,11 @@ $(document).ready(function() {
 	inputStringMinLength = $('#inputStringMinLength');
 	inputStringMaxLength = $('#inputStringMaxLength');
 
+	editNumber = $('#editNumber');
+	inputNumberUnits = $('#inputNumberUnits');
+	inputNumberMinValue = $('#inputNumberMinValue');
+	inputNumberMaxValue = $('#inputNumberMaxValue');
+
 	submitForm = $('#submitForm');
 	submitData = $('#submitData');
 	buttonSave = $('#save');
@@ -464,6 +513,11 @@ $(document).ready(function() {
 	// String edit controls
 	inputStringMinLength.change(updateCitype);
 	inputStringMaxLength.change(updateCitype);
+
+	// Number edit controls
+	inputNumberUnits.change(updateCitype);
+	inputNumberMinValue.change(updateCitype);
+	inputNumberMaxValue.change(updateCitype);
 
 	// Group edit controls
 	inputGroupSingular.change(updateCitype);
