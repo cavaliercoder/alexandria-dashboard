@@ -166,7 +166,11 @@ function buildAttributeListItem(att) {
 	var iconClass = 'unchecked';
 	switch(att.type) {
 		case 'string' :
-			iconClass = 'align-justify';
+			iconClass = 'font';
+			break;
+
+		case 'boolean' :
+			iconClass = 'check';
 			break;
 
 		case 'group' :
