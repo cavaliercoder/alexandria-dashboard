@@ -215,6 +215,23 @@ function removeAttribute(att) {
 
 	// remove list item from ui
 	att._li.remove();
+
+	// Select parent attribute if the deleted attribute was selected
+	if (att == selectedAtt) {
+		if (att._parent) {
+			setAttribute(att._parent);
+		}
+
+		else {
+			if (citype.attributes && citype.attributes.length) {
+				setAttribute(citype.attributes[0]);
+			}
+
+			else {
+				setAttribute(undefined);
+			}
+		}
+	}
 }
 
 function setAttribute(att) {
@@ -222,7 +239,9 @@ function setAttribute(att) {
 
 	// Set current attribute variables
 	selectedAtt = att;
-		attributeEditor.fadeOut(200, function() {
+	attributeEditor.fadeOut(200, function() {
+		if(! att)
+			return;
 
 		// update the editor form
 		inputAttName.val(att.name);
