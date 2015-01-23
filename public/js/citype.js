@@ -255,6 +255,9 @@ function removeAttribute(att) {
 function setAttribute(att) {
 	suspendUi = true;
 
+	if (att == selectedAtt)
+		return;
+	
 	// Set current attribute variables
 	selectedAtt = att;
 	attributeEditor.fadeOut(200, function() {
