@@ -130,10 +130,6 @@ function addAttribute(parent) {
 
 	// Select the attribute in the UI
 	setAttribute(att);
-
-	// Send user focus to the attribute name field
-	inputAttName.focus();
-	inputAttName.select();
 }
 
 function buildAttributeListItem(att) {
@@ -189,23 +185,32 @@ function buildAttributeListItem(att) {
 			break;
 
 		case 'group' :
-			iconClass = 'chevron-right';
+			iconClass = 'chevron-down';
 			break;
 	}
 
 	icon.removeClass().addClass('li-icon fa fa-' + iconClass);
 
-	// Add/remove 'add child' button
 	if (att.type == 'group') {
+		// Add child list
+		if (! ulChildren.length) {
+			ulChildren = $('<ul class="li-sublist list-unstyled"></ul>')
+				.appendTo(att._li);
+
+			// Allow list to be toggled
+			icon.click(function() { 
+				ulChildren.slideToggle(); 
+				icon
+					.toggleClass('fa-chevron-right')
+					.toggleClass('fa-chevron-down');
+			});
+		}
+
+		// Add/remove 'add child' button
 		if (! btnAdd.length) {
 			btnAdd = $('<button class="btn li-add" data-toggle="tooltip" data-original-title="Add child">&plus;</button>')
 				.appendTo($('span.li-controls', att._li));
 			btnAdd.click(function() { addAttribute(att); return false; });
-		}
-
-		if (! ulChildren.length) {
-			ulChildren = $('<ul class="li-sublist list-unstyled"></ul>')
-				.appendTo(att._li);
 		}
 	} else {
 		// Ensure group controls are cleaned up
@@ -295,7 +300,11 @@ function setAttribute(att) {
 		$('li', ulAtts).removeClass('active');
 		att._li.addClass('active');
 
-		attributeEditor.fadeIn(200);
+		attributeEditor.fadeIn(200, function() {
+			// Send user focus to the attribute name field
+			inputAttName.focus();
+			inputAttName.select();
+		});
 		suspendUi = false;
 	});
 }
