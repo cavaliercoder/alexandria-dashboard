@@ -31,7 +31,14 @@ type CITypes struct {
 
 func (c CITypes) Index() revel.Result {
 	cmdb := c.GetContextCmdb()
-	options := ApiOptions{Impersonate: true}
+	options := ApiOptions{
+		Impersonate: true,
+		Selector: map[string]interface{}{
+			"name":        1,
+			"shortname":   1,
+			"description": 1,
+		},
+	}
 
 	// Get CI Types
 	var citypes []CITypeModel

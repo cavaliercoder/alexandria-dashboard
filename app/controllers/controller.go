@@ -25,6 +25,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"regexp"
 	"strings"
 	"time"
@@ -63,16 +64,7 @@ func (c *Controller) ApiRequest(method string, path string, options ApiOptions) 
 		panic("API URL is not set")
 	}
 
-	// Strip API version prefix from the requested path as it should already be
-	// present in the configured API URL
-	r := regexp.MustCompile("^/api/v1")
-	path = r.ReplaceAllString(path, "")
-
-	// Build URL
-	url := fmt.Sprintf("%s%s", baseUrl, path)
-	method = strings.ToUpper(method)
-
-	// Add authentication header
+	// Get API Key
 	var apiKey string
 	if options.Impersonate {
 		apiKey = c.Session["token"]
@@ -80,6 +72,34 @@ func (c *Controller) ApiRequest(method string, path string, options ApiOptions) 
 		apiKey, ok = revel.Config.String("api.key")
 		if !ok {
 			revel.ERROR.Panic("API authentication key is not set")
+		}
+	}
+
+	// Compute URL query string
+	params := []string{}
+
+	// Add field selectors
+	if options.Selector != nil {
+		selector, err := json.Marshal(options.Selector)
+		if err != nil {
+			return nil, err
+		}
+
+		params = append(params, fmt.Sprintf("select=%s", url.QueryEscape(string(selector))))
+	}
+
+	// Build URL
+	// Strip API version prefix from the requested path as it should already be
+	// present in the configured API URL
+	r := regexp.MustCompile("^/api/v1")
+	path = r.ReplaceAllString(path, "")
+	url := fmt.Sprintf("%s%s", baseUrl, path)
+
+	for i, param := range params {
+		if i == 0 {
+			url = fmt.Sprintf("%s?%s", url, param)
+		} else {
+			url = fmt.Sprintf("%s&%s", url, param)
 		}
 	}
 
@@ -92,6 +112,7 @@ func (c *Controller) ApiRequest(method string, path string, options ApiOptions) 
 	}
 
 	// Create the request
+	method = strings.ToUpper(method)
 	req, err := http.NewRequest(method, url, options.Body)
 	if err != nil {
 		return nil, err
