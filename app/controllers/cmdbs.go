@@ -49,6 +49,8 @@ func (c Cmdbs) New() revel.Result {
 }
 
 func (c Cmdbs) ProcessNew() revel.Result {
+	options := ApiOptions{Impersonate: true}
+
 	var cmdb CmdbModel
 	cmdb.Name = c.Params.Get("name")
 	cmdb.Description = c.Params.Get("description")
@@ -62,7 +64,7 @@ func (c Cmdbs) ProcessNew() revel.Result {
 	}
 
 	// Create new CMDB
-	res, err := c.ApiPost(true, "/cmdbs", &cmdb)
+	res, err := c.ApiPost("/cmdbs", options, &cmdb)
 	c.Check(err)
 
 	// Parse the response

@@ -62,11 +62,13 @@ func (c Auth) ProcessRegistration() revel.Result {
 		return c.Redirect(Auth.Register)
 	}
 
+	options := ApiOptions{}
+
 	// Get/Create tenant
 	if user.TenantCode == "" {
 		// Create a new tenant
 		tenant.Name = user.Email
-		res, err := c.ApiPost(false, "/tenants", &tenant)
+		res, err := c.ApiPost("/tenants", options, &tenant)
 
 		if err != nil {
 			revel.ERROR.Panicf("Failed to create new tenant with: %s", err)
@@ -80,13 +82,13 @@ func (c Auth) ProcessRegistration() revel.Result {
 		}
 
 		// Fetch the new tenant
-		_, err = c.ApiGetBind(false, tenantUrl, &tenant)
+		_, err = c.ApiGetBind(tenantUrl, options, &tenant)
 		c.Check(err)
 
 		user.TenantCode = tenant.Code
 	} else {
 		// Find an existing tenant
-		status, err := c.ApiGetBind(false, fmt.Sprintf("/tenants/%s", user.TenantCode), &tenant)
+		status, err := c.ApiGetBind(fmt.Sprintf("/tenants/%s", user.TenantCode), options, &tenant)
 		c.Check(err)
 		switch status {
 		case http.StatusOK:
@@ -100,7 +102,7 @@ func (c Auth) ProcessRegistration() revel.Result {
 	}
 
 	// Create the user
-	res, err := c.ApiPost(false, "/users", &user)
+	res, err := c.ApiPost("/users", options, &user)
 	c.Check(err)
 	switch res.StatusCode {
 	case http.StatusCreated:
@@ -136,7 +138,7 @@ func (c Auth) ValidateLogin(username string, password string) revel.Result {
 		"username": username,
 		"password": password,
 	}
-	res, err := c.ApiPost(false, "/apikey", body)
+	res, err := c.ApiPost("/apikey", ApiOptions{}, body)
 	if err != ApiAuthError {
 		c.Check(err)
 	}

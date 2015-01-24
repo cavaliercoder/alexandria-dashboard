@@ -37,6 +37,14 @@ type Controller struct {
 	authContext *AuthContext
 }
 
+type ApiOptions struct {
+	Impersonate bool
+	Body        io.Reader
+	Selector    interface{}
+	Limit       int
+	Offset      int
+}
+
 // Check panics if the specified error is not nil.
 func (c *Controller) Check(err error) {
 	if err != nil {
@@ -48,7 +56,7 @@ func (c *Controller) Check(err error) {
 // The request can impersonate the authenticated user or be executed as the
 // Dashboard API account.
 // If a body is specified it is included as the request body.
-func (c *Controller) ApiRequest(impersonate bool, method string, path string, body io.Reader) (*http.Response, error) {
+func (c *Controller) ApiRequest(method string, path string, options ApiOptions) (*http.Response, error) {
 	// Get API URL from configuration
 	baseUrl, ok := revel.Config.String("api.url")
 	if !ok {
@@ -66,7 +74,7 @@ func (c *Controller) ApiRequest(impersonate bool, method string, path string, bo
 
 	// Add authentication header
 	var apiKey string
-	if impersonate {
+	if options.Impersonate {
 		apiKey = c.Session["token"]
 	} else {
 		apiKey, ok = revel.Config.String("api.key")
@@ -84,7 +92,7 @@ func (c *Controller) ApiRequest(impersonate bool, method string, path string, bo
 	}
 
 	// Create the request
-	req, err := http.NewRequest(method, url, body)
+	req, err := http.NewRequest(method, url, options.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -120,14 +128,14 @@ func (c *Controller) ApiRequest(impersonate bool, method string, path string, bo
 
 // ApiGet executes a RESTful GET operation on the Alexandria API and returns
 // a pointer to the http.Response struct.
-func (c *Controller) ApiGet(impersonate bool, path string) (*http.Response, error) {
-	return c.ApiRequest(impersonate, "GET", path, nil)
+func (c *Controller) ApiGet(path string, options ApiOptions) (*http.Response, error) {
+	return c.ApiRequest("GET", path, options)
 }
 
 // ApiGetString executes a RESTful GET operation on the Alexandria API and
 // returns the response body as a string or an error.
-func (c *Controller) ApiGetString(impersonate bool, path string) (string, int, error) {
-	res, err := c.ApiRequest(impersonate, "GET", path, nil)
+func (c *Controller) ApiGetString(path string, options ApiOptions) (string, int, error) {
+	res, err := c.ApiRequest("GET", path, options)
 	if err != nil {
 		return "", 0, err
 	}
@@ -147,8 +155,8 @@ func (c *Controller) ApiGetString(impersonate bool, path string) (string, int, e
 
 // ApiGetBind submits an API GET request and binds the response to the
 // specified interface{}.
-func (c *Controller) ApiGetBind(impersonate bool, path string, v interface{}) (int, error) {
-	res, err := c.ApiRequest(impersonate, "GET", path, nil)
+func (c *Controller) ApiGetBind(path string, options ApiOptions, v interface{}) (int, error) {
+	res, err := c.ApiRequest("GET", path, options)
 	if err != nil {
 		return 0, err
 	}
@@ -186,22 +194,24 @@ func (c *Controller) GetReader(body interface{}) (io.Reader, error) {
 	return strings.NewReader(string(b)), nil
 }
 
-func (c *Controller) ApiPost(impersonate bool, path string, body interface{}) (*http.Response, error) {
+func (c *Controller) ApiPost(path string, options ApiOptions, body interface{}) (*http.Response, error) {
 	reader, err := c.GetReader(body)
 	if err != nil {
 		return nil, err
 	}
 
-	return c.ApiRequest(impersonate, "POST", path, reader)
+	options.Body = reader
+	return c.ApiRequest("POST", path, options)
 }
 
-func (c *Controller) ApiPut(impersonate bool, path string, body interface{}) (*http.Response, error) {
+func (c *Controller) ApiPut(path string, options ApiOptions, body interface{}) (*http.Response, error) {
 	reader, err := c.GetReader(body)
 	if err != nil {
 		return nil, err
 	}
 
-	return c.ApiRequest(impersonate, "PUT", path, reader)
+	options.Body = reader
+	return c.ApiRequest("PUT", path, options)
 }
 
 // Bind decodes the body of a HTTP response into the specified interface{}.
@@ -227,6 +237,8 @@ func (c *Controller) Bind(res *http.Response, v interface{}) error {
 // AuthContext returns the currently authenticated user, the user's tencancy
 // and available CMDBs.
 func (c *Controller) AuthContext() *AuthContext {
+	options := ApiOptions{Impersonate: true}
+
 	// Check for the auth key in the session cookie
 	if !c.IsLoggedIn() {
 		c.authContext = nil
@@ -236,7 +248,7 @@ func (c *Controller) AuthContext() *AuthContext {
 	if c.authContext == nil {
 		// fetch user details
 		var user UserModel
-		status, err := c.ApiGetBind(true, "/users/current", &user)
+		status, err := c.ApiGetBind("/users/current", options, &user)
 		c.Check(err)
 		if status != http.StatusOK {
 			revel.ERROR.Panicf("Failed get current user from the API with: %d", status)
@@ -244,7 +256,7 @@ func (c *Controller) AuthContext() *AuthContext {
 
 		// fetch tenant details
 		var tenant TenantModel
-		status, err = c.ApiGetBind(true, "/tenants/current", &tenant)
+		status, err = c.ApiGetBind("/tenants/current", options, &tenant)
 		c.Check(err)
 		if status != http.StatusOK {
 			revel.ERROR.Panicf("Failed get current user tenancy from the API with: %d", status)
@@ -252,7 +264,7 @@ func (c *Controller) AuthContext() *AuthContext {
 
 		// fetch available cmdbs
 		var cmdbs []CmdbModel
-		status, err = c.ApiGetBind(true, "/cmdbs", &cmdbs)
+		status, err = c.ApiGetBind("/cmdbs", options, &cmdbs)
 		c.Check(err)
 		if status != http.StatusOK {
 			revel.ERROR.Panicf("Failed get a list of CMDBs from the API with: %d", status)

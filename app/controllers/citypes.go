@@ -31,10 +31,11 @@ type CITypes struct {
 
 func (c CITypes) Index() revel.Result {
 	cmdb := c.GetContextCmdb()
+	options := ApiOptions{Impersonate: true}
 
 	// Get CI Types
 	var citypes []CITypeModel
-	status, err := c.ApiGetBind(true, fmt.Sprintf("/cmdbs/%s/citypes", cmdb.ShortName), &citypes)
+	status, err := c.ApiGetBind(fmt.Sprintf("/cmdbs/%s/citypes", cmdb.ShortName), options, &citypes)
 	c.Check(err)
 
 	if status != http.StatusOK {
@@ -48,10 +49,11 @@ func (c CITypes) Index() revel.Result {
 
 func (c CITypes) Edit(id string) revel.Result {
 	cmdb := c.GetContextCmdb()
+	options := ApiOptions{Impersonate: true}
 
 	// Get CI Types
 	var citypes []CITypeModel
-	status, err := c.ApiGetBind(true, fmt.Sprintf("/cmdbs/%s/citypes", cmdb.ShortName), &citypes)
+	status, err := c.ApiGetBind(fmt.Sprintf("/cmdbs/%s/citypes", cmdb.ShortName), options, &citypes)
 	c.Check(err)
 
 	if status != http.StatusOK {
@@ -91,6 +93,8 @@ func (c CITypes) Edit(id string) revel.Result {
 }
 
 func (c CITypes) Add() revel.Result {
+	options := ApiOptions{Impersonate: true}
+
 	var citype CITypeModel
 	citype.Name = c.Params.Get("name")
 	citype.Description = c.Params.Get("description")
@@ -105,7 +109,7 @@ func (c CITypes) Add() revel.Result {
 
 	// Create the CI Type
 	cmdb := c.GetContextCmdb()
-	res, err := c.ApiPost(true, fmt.Sprintf("/cmdbs/%s/citypes", cmdb.ShortName), &citype)
+	res, err := c.ApiPost(fmt.Sprintf("/cmdbs/%s/citypes", cmdb.ShortName), options, &citype)
 	c.Check(err)
 	switch res.StatusCode {
 	case http.StatusCreated:
@@ -128,6 +132,8 @@ func (c CITypes) Add() revel.Result {
 }
 
 func (c CITypes) Update(cmdb string, id string, data string) revel.Result {
+	options := ApiOptions{Impersonate: true}
+
 	// Validate request
 	c.Validation.Required(cmdb)
 	c.Validation.Required(id)
@@ -141,7 +147,7 @@ func (c CITypes) Update(cmdb string, id string, data string) revel.Result {
 	// Get the old type
 	var oldUri = fmt.Sprintf("/cmdbs/%s/citypes/%s", cmdb, id)
 	var original CITypeModel
-	status, err := c.ApiGetBind(true, oldUri, &original)
+	status, err := c.ApiGetBind(oldUri, options, &original)
 	c.Check(err)
 	if status != http.StatusOK {
 		c.Flash.Error("Failed to retrieve original CI Type: %s", id)
@@ -149,7 +155,7 @@ func (c CITypes) Update(cmdb string, id string, data string) revel.Result {
 	}
 
 	// Send the update data to the API
-	res, err := c.ApiPut(true, fmt.Sprintf("/cmdbs/%s/citypes/%s", cmdb, id), data)
+	res, err := c.ApiPut(fmt.Sprintf("/cmdbs/%s/citypes/%s", cmdb, id), options, data)
 	c.Check(err)
 
 	// Compute URL of updated resource
@@ -165,7 +171,7 @@ func (c CITypes) Update(cmdb string, id string, data string) revel.Result {
 
 	// Get the new type
 	var updated CITypeModel
-	status, err = c.ApiGetBind(true, newUri, &updated)
+	status, err = c.ApiGetBind(newUri, options, &updated)
 	c.Check(err)
 	if status != http.StatusOK {
 		revel.ERROR.Panicf("Failed to fetch updated resource with: %d", status)
