@@ -36,13 +36,13 @@ type Controller struct {
 	authContext *AuthContext
 }
 
-func (c Controller) Check(err error) {
+func (c *Controller) Check(err error) {
 	if err != nil {
 		revel.ERROR.Panic(err)
 	}
 }
 
-func (c Controller) ApiRequest(impersonate bool, method string, path string, body io.Reader) (*http.Response, error) {
+func (c *Controller) ApiRequest(impersonate bool, method string, path string, body io.Reader) (*http.Response, error) {
 	// TODO: Add configurable API url
 	baseUrl, ok := revel.Config.String("api.url")
 	if !ok {
@@ -111,11 +111,11 @@ func (c Controller) ApiRequest(impersonate bool, method string, path string, bod
 	return res, err
 }
 
-func (c Controller) ApiGet(impersonate bool, path string) (*http.Response, error) {
+func (c *Controller) ApiGet(impersonate bool, path string) (*http.Response, error) {
 	return c.ApiRequest(impersonate, "GET", path, nil)
 }
 
-func (c Controller) ApiGetString(impersonate bool, path string) (string, int, error) {
+func (c *Controller) ApiGetString(impersonate bool, path string) (string, int, error) {
 	res, err := c.ApiRequest(impersonate, "GET", path, nil)
 	if err != nil {
 		return "", 0, err
@@ -133,12 +133,12 @@ func (c Controller) ApiGetString(impersonate bool, path string) (string, int, er
 	return string(bytes), res.StatusCode, nil
 }
 
-func (c Controller) BindJson(body io.Reader, v interface{}) error {
+func (c *Controller) BindJson(body io.Reader, v interface{}) error {
 	err := json.NewDecoder(body).Decode(v)
 	return err
 }
 
-func (c Controller) ApiGetBind(impersonate bool, path string, v interface{}) (int, error) {
+func (c *Controller) ApiGetBind(impersonate bool, path string, v interface{}) (int, error) {
 	res, err := c.ApiRequest(impersonate, "GET", path, nil)
 	if err != nil {
 		return 0, err
@@ -160,7 +160,7 @@ func (c Controller) ApiGetBind(impersonate bool, path string, v interface{}) (in
 	return res.StatusCode, nil
 }
 
-func (c Controller) GetReader(body interface{}) (io.Reader, error) {
+func (c *Controller) GetReader(body interface{}) (io.Reader, error) {
 	if str, ok := body.(string); ok {
 		return strings.NewReader(str), nil
 	}
@@ -174,7 +174,7 @@ func (c Controller) GetReader(body interface{}) (io.Reader, error) {
 	return strings.NewReader(string(b)), nil
 }
 
-func (c Controller) ApiPost(impersonate bool, path string, body interface{}) (*http.Response, error) {
+func (c *Controller) ApiPost(impersonate bool, path string, body interface{}) (*http.Response, error) {
 	reader, err := c.GetReader(body)
 	if err != nil {
 		return nil, err
@@ -183,7 +183,7 @@ func (c Controller) ApiPost(impersonate bool, path string, body interface{}) (*h
 	return c.ApiRequest(impersonate, "POST", path, reader)
 }
 
-func (c Controller) ApiPut(impersonate bool, path string, body interface{}) (*http.Response, error) {
+func (c *Controller) ApiPut(impersonate bool, path string, body interface{}) (*http.Response, error) {
 	reader, err := c.GetReader(body)
 	if err != nil {
 		return nil, err
@@ -193,7 +193,7 @@ func (c Controller) ApiPut(impersonate bool, path string, body interface{}) (*ht
 }
 
 // Bind decodes the body of a HTTP response into the specified interface
-func (c Controller) Bind(res *http.Response, v interface{}) error {
+func (c *Controller) Bind(res *http.Response, v interface{}) error {
 	if res.Body == nil {
 		return errors.New("Response body is empty")
 	}
@@ -212,7 +212,7 @@ func (c Controller) Bind(res *http.Response, v interface{}) error {
 	return nil
 }
 
-func (c Controller) AuthContext() *AuthContext {
+func (c *Controller) AuthContext() *AuthContext {
 	// Check for the auth key in the session cookie
 	if !c.IsLoggedIn() {
 		c.authContext = nil
@@ -254,11 +254,11 @@ func (c Controller) AuthContext() *AuthContext {
 	return c.authContext
 }
 
-func (c Controller) IsLoggedIn() bool {
+func (c *Controller) IsLoggedIn() bool {
 	return c.Session["token"] != ""
 }
 
-func (c Controller) DestroySession() {
+func (c *Controller) DestroySession() {
 	revel.TRACE.Print("Destroying user session")
 	for k := range c.Session {
 		delete(c.Session, k)
@@ -267,7 +267,7 @@ func (c Controller) DestroySession() {
 
 // CheckLogin is an interceptor which redirects users to the login screen if
 // they attempt to access a private resource without being logged in.
-func (c Controller) CheckLogin() revel.Result {
+func (c *Controller) CheckLogin() revel.Result {
 	// Check if auth token is set
 	if !c.IsLoggedIn() {
 		revel.TRACE.Printf("Received unauthorized request for: %s", c.Request.URL)
@@ -284,7 +284,7 @@ func (c Controller) CheckLogin() revel.Result {
 	return nil
 }
 
-func (c Controller) GetCmdb(cmdbName string) *CmdbModel {
+func (c *Controller) GetCmdb(cmdbName string) *CmdbModel {
 	authContext := c.AuthContext()
 	if authContext == nil {
 		return nil
@@ -306,7 +306,7 @@ func (c Controller) GetCmdb(cmdbName string) *CmdbModel {
 //    by ValidateRouteCmdb())
 // 2. The CMDB stored in the session cookie
 // 3. The first CMDB associated with the user
-func (c Controller) GetContextCmdb() *CmdbModel {
+func (c *Controller) GetContextCmdb() *CmdbModel {
 	cmdb := c.GetCmdb(c.Session["cmdb"])
 	if cmdb != nil {
 		return cmdb
@@ -320,7 +320,7 @@ func (c Controller) GetContextCmdb() *CmdbModel {
 	return &authContext.Cmdbs[0]
 }
 
-func (c Controller) SetSessionCmdb(cmdbName string) bool {
+func (c *Controller) SetSessionCmdb(cmdbName string) bool {
 	if cmdbName == c.Session["cmdb"] {
 		return true
 	}
@@ -340,7 +340,7 @@ func (c Controller) SetSessionCmdb(cmdbName string) bool {
 // 1. The CMDB described in the URL format /cmdbs/:cmdb
 // 2. The CMDB stored in the session cookie
 // 3. The first CMDB associated with the user
-func (c Controller) ValidateRouteCmdb() revel.Result {
+func (c *Controller) ValidateRouteCmdb() revel.Result {
 	cmdb := c.Params.Get("cmdb")
 	if cmdb == "" {
 		revel.ERROR.Panic("No CMDB is defined in the current route")
@@ -358,7 +358,7 @@ func (c Controller) ValidateRouteCmdb() revel.Result {
 
 // AddRenderArgs is an intercepter which adds common render args to the
 // controller for use in templates.
-func (c Controller) AddRenderArgs() revel.Result {
+func (c *Controller) AddRenderArgs() revel.Result {
 	// AppName from config file
 	c.RenderArgs["AppName"], _ = revel.Config.String("app.name")
 

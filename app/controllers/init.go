@@ -27,13 +27,13 @@ func init() {
 	}, revel.BEFORE, Controller{})
 
 	// Enforce authentication for private controllers
-	revel.InterceptMethod(App.CheckLogin, revel.BEFORE)
-	revel.InterceptMethod(Cmdbs.CheckLogin, revel.BEFORE)
-	revel.InterceptMethod(CITypes.CheckLogin, revel.BEFORE)
+	revel.InterceptMethod((*App).CheckLogin, revel.BEFORE)
+	revel.InterceptMethod((*Cmdbs).CheckLogin, revel.BEFORE)
+	revel.InterceptMethod((*CITypes).CheckLogin, revel.BEFORE)
 
 	// Validate CMDB URL params for CMDB related routes
-	revel.InterceptMethod(CITypes.ValidateRouteCmdb, revel.BEFORE)
+	revel.InterceptMethod((*CITypes).ValidateRouteCmdb, revel.BEFORE)
 
 	// Add common RenderArgs such as Application Name
-	revel.InterceptMethod(Controller.AddRenderArgs, revel.BEFORE)
+	revel.InterceptMethod((*Controller).AddRenderArgs, revel.BEFORE)
 }
