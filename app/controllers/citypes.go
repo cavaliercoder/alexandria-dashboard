@@ -59,31 +59,16 @@ func (c CITypes) Edit(id string) revel.Result {
 	options := ApiOptions{Impersonate: true}
 
 	// Get CI Types
-	var citypes []CITypeModel
-	status, err := c.ApiGetBind(fmt.Sprintf("/cmdbs/%s/citypes", cmdb.ShortName), options, &citypes)
+	var citype CITypeModel
+	status, err := c.ApiGetBind(fmt.Sprintf("/cmdbs/%s/citypes/%s", cmdb.ShortName, id), options, &citype)
 	c.Check(err)
 
-	if status != http.StatusOK {
-		revel.ERROR.Panicf("Failed to retrieve CI Types for database %s with: %d", cmdb.Name, status)
-	}
+	switch status {
+	case http.StatusOK:
+		// Do nothing
 
-	c.RenderArgs["citypes"] = citypes
-
-	// Get selected CI Type
-	var citype *CITypeModel
-
-	// Find the selected type
-	found := false
-	for _, v := range citypes {
-		if v.ShortName == id {
-			found = true
-			citype = &v
-			break
-		}
-	}
-
-	if !found {
-		return c.NotFound("No such CI Type: %s", id)
+	case http.StatusNotFound:
+		c.NotFound("No such CI Type: %s", id)
 	}
 
 	// Store the CI type for rendering
@@ -131,6 +116,7 @@ func (c CITypes) Add() revel.Result {
 	case http.StatusConflict:
 		c.Flash.Error("CI type '%s' already exists", citype.Name)
 		return c.Redirect("/cmdb/%s/citypes", cmdb.Name)
+
 	default:
 		revel.ERROR.Panicf("Failed to create CI Type with: %s", res.Status)
 	}
