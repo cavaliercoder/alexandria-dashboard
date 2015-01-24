@@ -189,7 +189,7 @@ function buildAttributeListItem(att) {
 			break;
 	}
 
-	icon.removeClass().addClass('li-icon fa fa-' + iconClass);
+	icon.removeClass().addClass('li-icon fa fa-fw fa-' + iconClass);
 
 	if (att.type == 'group') {
 		// Add child list
