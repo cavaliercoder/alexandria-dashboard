@@ -27,6 +27,7 @@ import (
 	"net/http"
 	"regexp"
 	"strings"
+	"time"
 )
 
 var ApiAuthError = errors.New("API Authentication error")
@@ -36,20 +37,26 @@ type Controller struct {
 	authContext *AuthContext
 }
 
+// Check panics if the specified error is not nil.
 func (c *Controller) Check(err error) {
 	if err != nil {
 		revel.ERROR.Panic(err)
 	}
 }
 
+// ApiRequest executes a RESTful operation against the Alexandria API.
+// The request can impersonate the authenticated user or be executed as the
+// Dashboard API account.
+// If a body is specified it is included as the request body.
 func (c *Controller) ApiRequest(impersonate bool, method string, path string, body io.Reader) (*http.Response, error) {
-	// TODO: Add configurable API url
+	// Get API URL from configuration
 	baseUrl, ok := revel.Config.String("api.url")
 	if !ok {
 		panic("API URL is not set")
 	}
 
-	// Strip API version prefix
+	// Strip API version prefix from the requested path as it should already be
+	// present in the configured API URL
 	r := regexp.MustCompile("^/api/v1")
 	path = r.ReplaceAllString(path, "")
 
@@ -57,6 +64,7 @@ func (c *Controller) ApiRequest(impersonate bool, method string, path string, bo
 	url := fmt.Sprintf("%s%s", baseUrl, path)
 	method = strings.ToUpper(method)
 
+	// Add authentication header
 	var apiKey string
 	if impersonate {
 		apiKey = c.Session["token"]
@@ -66,8 +74,6 @@ func (c *Controller) ApiRequest(impersonate bool, method string, path string, bo
 			revel.ERROR.Panic("API authentication key is not set")
 		}
 	}
-
-	revel.TRACE.Printf("Started API Request: %s %s", method, url)
 
 	// Create a HTTP client that does not follow redirects
 	// This allows 'Location' headers to be read
@@ -96,31 +102,37 @@ func (c *Controller) ApiRequest(impersonate bool, method string, path string, bo
 	req.Header.Add("User-Agent", "Alexandria CMDB Dashboard")
 
 	// Submit the request
+	revel.TRACE.Printf("API started: %s %s", method, url)
+	start := time.Now()
 	res, err := client.Do(req)
 	if res == nil {
 		revel.ERROR.Panic("An error occurred communicating with backend services")
 	}
+	revel.TRACE.Printf("API finished: %s in %s", res.Status, time.Since(start))
 
 	// Validate response
 	if res.StatusCode == http.StatusUnauthorized {
 		return res, ApiAuthError
 	}
 
-	revel.TRACE.Printf("Finished API request with: %s", res.Status)
-
 	return res, err
 }
 
+// ApiGet executes a RESTful GET operation on the Alexandria API and returns
+// a pointer to the http.Response struct.
 func (c *Controller) ApiGet(impersonate bool, path string) (*http.Response, error) {
 	return c.ApiRequest(impersonate, "GET", path, nil)
 }
 
+// ApiGetString executes a RESTful GET operation on the Alexandria API and
+// returns the response body as a string or an error.
 func (c *Controller) ApiGetString(impersonate bool, path string) (string, int, error) {
 	res, err := c.ApiRequest(impersonate, "GET", path, nil)
 	if err != nil {
 		return "", 0, err
 	}
 
+	// Read the response body into a string
 	var bytes []byte
 	if res.Body != nil {
 		defer res.Body.Close()
@@ -133,11 +145,8 @@ func (c *Controller) ApiGetString(impersonate bool, path string) (string, int, e
 	return string(bytes), res.StatusCode, nil
 }
 
-func (c *Controller) BindJson(body io.Reader, v interface{}) error {
-	err := json.NewDecoder(body).Decode(v)
-	return err
-}
-
+// ApiGetBind submits an API GET request and binds the response to the
+// specified interface{}.
 func (c *Controller) ApiGetBind(impersonate bool, path string, v interface{}) (int, error) {
 	res, err := c.ApiRequest(impersonate, "GET", path, nil)
 	if err != nil {
@@ -151,7 +160,7 @@ func (c *Controller) ApiGetBind(impersonate bool, path string, v interface{}) (i
 	defer res.Body.Close()
 
 	if res.StatusCode == http.StatusOK {
-		err = c.BindJson(res.Body, v)
+		err = json.NewDecoder(res.Body).Decode(v)
 		if err != nil {
 			return res.StatusCode, err
 		}
@@ -160,6 +169,9 @@ func (c *Controller) ApiGetBind(impersonate bool, path string, v interface{}) (i
 	return res.StatusCode, nil
 }
 
+// GetReader returns an io.Reader which will read the content of an interface{}
+// as JSON encoded data. Used to create a HTTP request body from an
+// interface{}.
 func (c *Controller) GetReader(body interface{}) (io.Reader, error) {
 	if str, ok := body.(string); ok {
 		return strings.NewReader(str), nil
@@ -192,7 +204,7 @@ func (c *Controller) ApiPut(impersonate bool, path string, body interface{}) (*h
 	return c.ApiRequest(impersonate, "PUT", path, reader)
 }
 
-// Bind decodes the body of a HTTP response into the specified interface
+// Bind decodes the body of a HTTP response into the specified interface{}.
 func (c *Controller) Bind(res *http.Response, v interface{}) error {
 	if res.Body == nil {
 		return errors.New("Response body is empty")
@@ -212,6 +224,8 @@ func (c *Controller) Bind(res *http.Response, v interface{}) error {
 	return nil
 }
 
+// AuthContext returns the currently authenticated user, the user's tencancy
+// and available CMDBs.
 func (c *Controller) AuthContext() *AuthContext {
 	// Check for the auth key in the session cookie
 	if !c.IsLoggedIn() {
@@ -254,10 +268,13 @@ func (c *Controller) AuthContext() *AuthContext {
 	return c.authContext
 }
 
+// IsLoggedIn checks for the presents of a session cookie and returns true if
+// a valid cookie is present.
 func (c *Controller) IsLoggedIn() bool {
 	return c.Session["token"] != ""
 }
 
+// DestroySession clears a user's session, effectively logging them out.
 func (c *Controller) DestroySession() {
 	revel.TRACE.Print("Destroying user session")
 	for k := range c.Session {
@@ -284,6 +301,8 @@ func (c *Controller) CheckLogin() revel.Result {
 	return nil
 }
 
+// GetCmdb returns a struct for the requested CMDB if it is available in the
+// authenticated user's tenancy. If the CMDB does not exist, nil is returned.
 func (c *Controller) GetCmdb(cmdbName string) *CmdbModel {
 	authContext := c.AuthContext()
 	if authContext == nil {
@@ -307,11 +326,13 @@ func (c *Controller) GetCmdb(cmdbName string) *CmdbModel {
 // 2. The CMDB stored in the session cookie
 // 3. The first CMDB associated with the user
 func (c *Controller) GetContextCmdb() *CmdbModel {
+	// Get CMDB from session cookie
 	cmdb := c.GetCmdb(c.Session["cmdb"])
 	if cmdb != nil {
 		return cmdb
 	}
 
+	// Get first available CMDB for authenticated user
 	authContext := c.AuthContext()
 	if authContext == nil || len(authContext.Cmdbs) == 0 {
 		return nil
@@ -320,11 +341,16 @@ func (c *Controller) GetContextCmdb() *CmdbModel {
 	return &authContext.Cmdbs[0]
 }
 
+// SetSessionCmdb sets the selected CMDB cookie so all subsequent requests
+// assume the specified CMDB if none is specified.
+// Returns true if the CMDB exists.
 func (c *Controller) SetSessionCmdb(cmdbName string) bool {
+	// Do nothing if already set
 	if cmdbName == c.Session["cmdb"] {
 		return true
 	}
 
+	// Validate and update
 	cmdb := c.GetCmdb(cmdbName)
 	if cmdb != nil {
 		c.Session["cmdb"] = cmdb.Name
@@ -334,22 +360,21 @@ func (c *Controller) SetSessionCmdb(cmdbName string) bool {
 	return false
 }
 
-// Cmdb is an intercepter ensures the existance of the CMDB required for the
-// current request context.
-// The appropriate CMDB is determined in the following order of preference:
-// 1. The CMDB described in the URL format /cmdbs/:cmdb
-// 2. The CMDB stored in the session cookie
-// 3. The first CMDB associated with the user
+// Cmdb is an intercepter that ensures the existance of the CMDB required for
+// the current request context.
 func (c *Controller) ValidateRouteCmdb() revel.Result {
+	// Get the CMDB name from the URL path
 	cmdb := c.Params.Get("cmdb")
 	if cmdb == "" {
 		revel.ERROR.Panic("No CMDB is defined in the current route")
 	}
 
+	// Ensure the CMDB exists
 	if c.GetCmdb(cmdb) == nil {
 		return c.NotFound("No such CMDB was found: %s", cmdb)
 	}
 
+	// Store the CMDB in session cookie
 	if !c.SetSessionCmdb(cmdb) {
 		revel.ERROR.Panic("Failed to set session CMDB")
 	}
