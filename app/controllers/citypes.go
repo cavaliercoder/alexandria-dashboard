@@ -46,7 +46,7 @@ func (c CITypes) Index() revel.Result {
 	c.Check(err)
 
 	if status != http.StatusOK {
-		revel.ERROR.Panicf("Failed to retrieve CI Types for database %s with: %d", cmdb.Name, status)
+		revel.ERROR.Panicf(c.Message("error.citypes.index", cmdb.Name, status))
 	}
 
 	c.RenderArgs["citypes"] = citypes
@@ -68,7 +68,7 @@ func (c CITypes) Edit(id string) revel.Result {
 		// Do nothing
 
 	case http.StatusNotFound:
-		c.NotFound("No such CI Type: %s", id)
+		c.NotFound(c.Message("error.citypes.nofound", id))
 	}
 
 	// Store the CI type for rendering
@@ -77,7 +77,7 @@ func (c CITypes) Edit(id string) revel.Result {
 	// Store raw JSON version for javascript
 	bytes, err := json.Marshal(citype)
 	if err != nil {
-		revel.ERROR.Panicf("Failed to marshall interface to JSON with: %s", err)
+		revel.ERROR.Panicf(c.Message("error.citype.marshal", err))
 	}
 	c.RenderArgs["citypeJson"] = string(bytes)
 
@@ -110,15 +110,15 @@ func (c CITypes) Add() revel.Result {
 		re := regexp.MustCompile("[^/]*$")
 		shortname := re.FindString(location)
 
-		c.Flash.Success("Created %s", citype.Name)
+		c.Flash.Success(c.Message("success.citypes.created", citype.Name))
 		return c.Redirect("/cmdb/%s/citypes/%s", cmdb.ShortName, shortname)
 
 	case http.StatusConflict:
-		c.Flash.Error("CI type '%s' already exists", citype.Name)
-		return c.Redirect("/cmdb/%s/citypes", cmdb.Name)
+		c.Flash.Error(c.Message("error.citypes.conflict", citype.Name))
+		return c.Redirect("/cmdb/%s/citypes", cmdb.ShortName)
 
 	default:
-		revel.ERROR.Panicf("Failed to create CI Type with: %s", res.Status)
+		revel.ERROR.Panicf(c.Message("error.citypes.create", res.Status))
 	}
 
 	return nil
@@ -143,7 +143,7 @@ func (c CITypes) Update(cmdb string, id string, data string) revel.Result {
 	status, err := c.ApiGetBind(oldUri, options, &original)
 	c.Check(err)
 	if status != http.StatusOK {
-		c.Flash.Error("Failed to retrieve original CI Type: %s", id)
+		c.Flash.Error(c.Message("error.citypes.getoriginal", id))
 		return c.Redirect("/cmdb/%s/citypes/%s", cmdb, id)
 	}
 
@@ -159,7 +159,7 @@ func (c CITypes) Update(cmdb string, id string, data string) revel.Result {
 	case http.StatusMovedPermanently:
 		newUri = res.Header.Get("Location")
 	default:
-		revel.ERROR.Panicf("Failed to update resource with: %s", res.Status)
+		revel.ERROR.Panicf(c.Message("error.citypes.update", res.Status))
 	}
 
 	// Get the new type
@@ -167,7 +167,7 @@ func (c CITypes) Update(cmdb string, id string, data string) revel.Result {
 	status, err = c.ApiGetBind(newUri, options, &updated)
 	c.Check(err)
 	if status != http.StatusOK {
-		revel.ERROR.Panicf("Failed to fetch updated resource with: %d", status)
+		revel.ERROR.Panicf(c.Message("error.citypes.fetchupdated", status))
 	}
 
 	// Redirect to the updated resource

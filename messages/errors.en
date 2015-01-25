@@ -1,0 +1,8 @@
+error.citypes.index=Failed to retrieve CI Types for database %s with: %d
+error.citypes.notfound=No such CI Type: %s
+error.citypes.marshal=Failed to marshall interface to JSON with: %s
+error.citypes.create=Failed to create CI Type with: %s
+error.citypes.conflict=CI type '%s' already exists
+error.citypes.getoriginal=Failed to retrieve original CI Type: %s
+error.citypes.update=Failed to update resource with: %s
+error.citypes.fetchupdated=Failed to fetch updated resource with: %d
