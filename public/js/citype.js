@@ -17,6 +17,7 @@ var selectAttType = null;
 var inputAttRequired = null;
 
 var editArray = null;
+var editArrayOptions = null;
 var inputAttMinCount = null;
 var inputAttMaxCount = null;
 
@@ -279,6 +280,11 @@ function setAttribute(att) {
 
 		// Update array editor
 		inputAttArray.prop('checked', att.isArray ? true : false);
+		if ( att.isArray)
+			editArrayOptions.show(); 
+		else
+			editArrayOptions.hide();
+
 		inputAttMinCount.val(att.minCount);
 		inputAttMaxCount.val(att.maxCount);
 		
@@ -320,6 +326,7 @@ function showControlGroup(attType) {
 
 	// Reset array controls
 	editArray.hide();
+	editArrayOptions.hide();
 	inputAttArray.prop('checked', false);
 	inputAttMinCount.val('');
 	inputAttMaxCount.val('');
@@ -480,6 +487,7 @@ $(document).ready(function() {
 	selectAttType = $('#attType');
 
 	editArray = $('#editArray');
+	editArrayOptions = $('#editArrayOptions');
 	inputAttArray = $('#inputAttArray');
 	inputAttMinCount = $('#inputAttMinCount');
 	inputAttMaxCount = $('#inputAttMaxCount');
@@ -518,6 +526,13 @@ $(document).ready(function() {
 
 	inputAttArray.change(function() {
 		suspendUi = true;
+
+		// show/hide array options
+		if(inputAttArray.is(':checked')) {
+			editArrayOptions.fadeIn();
+		} else {
+			editArrayOptions.fadeOut();
+		}
 
 		// Special consideration for showing group controls
 		if(selectedAtt.type == "group") {
