@@ -549,6 +549,13 @@ $(document).ready(function() {
 	// Display initial details
 	buildAttTree(citype.attributes, ulAtts, '');
 
+	// Setup help messages
+	$('*[data-help-key]').hover(function() {
+		var key = 'help.' + $(this).data('help-key');
+		var body = i18n.t(key);
+		attributeHelp.html(body);
+	});
+
 	// Select first or create an attribute
 	if (citype.attributes.length === 0) {
 		addAttribute(null);

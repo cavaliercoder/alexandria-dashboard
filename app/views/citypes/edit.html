@@ -59,19 +59,19 @@
 			<!-- Attribute editor -->
 			<div class="col-lg-6" id="attributeEditor">
 				<form action="#" class="form-horizontal">
-					<div class="form-group">
+					<div class="form-group" data-help-key="att.name">
 						<label for="name" class="col-sm-2 control-label">{{msg . "label.name"}}</label>
 						<div class="col-sm-10">
 							<input type="text" class="form-control" id="attName" name="name" placeholder="{{msg . "placeholder.att.name"}}" />
 						</div>
 					</div>
-					<div class="form-group">
+					<div class="form-group" data-help-key="att.description">
 						<label for="description" class="col-sm-2 control-label">{{msg . "label.description"}}</label>
 						<div class="col-sm-10">
 							<textarea id="attDesc" name="description" class="form-control" rows="3"></textarea>
 						</div>
 					</div>
-					<div class="form-group">
+					<div class="form-group" data-help-key="att.type">
 						<label for="type" class="col-sm-2 control-label">{{msg . "label.type"}}</label>
 						<div class="col-sm-10">
 							<select name="type" id="attType" class="form-control">
@@ -84,7 +84,7 @@
 						</div>
 					</div>
 
-					<div class="form-group" >
+					<div class="form-group" data-help-key="att.required">
 						<label for="required" class="col-sm-2 control-label">{{msg . "label.required"}}</label>
 						<div class="col-sm-1">
 							<input type="checkbox" id="inputAttRequired" />
@@ -93,7 +93,7 @@
 
 					<!--  Array editor controls -->
 					<div id="editArray">
-						<div class="form-group">
+						<div class="form-group" data-help-key="att.array">
 							<label for="array" class="col-sm-2 control-label">{{msg . "label.array"}}</label>
 							<div class="col-sm-1">
 								<input type="checkbox" id="inputAttArray" />
@@ -111,7 +111,7 @@
 
 					<!-- String attribute editor controls -->
 					<div id="editString">
-						<div class="form-group">
+						<div class="form-group" data-help-key="att.string">
 							<label for="minLength" class="col-sm-2 control-label">{{msg . "label.minimumlength"}}</label>
 							<div class="col-sm-4">
 								<input type="text" id="inputStringMinLength" class="form-control" placeholder="{{msg . "placeholder.none"}}" />
@@ -125,7 +125,7 @@
 
 					<!-- Number attribute editor controls -->
 					<div id="editNumber">
-						<div class="form-group">
+						<div class="form-group" data-help-key="att.number">
 							<label for="units" class="col-sm-2 control-label">{{msg . "label.units"}}</label>
 							<div class="col-sm-2">
 								<input type="text" id="inputNumberUnits" class="form-control" />
@@ -142,7 +142,7 @@
 					</div>
 
 					<!-- Group attribute editor controls -->
-					<div class="form-group" id="editGroup">
+					<div class="form-group" id="editGroup" data-help-key="att.group">
 						<label for="singular" class="col-sm-2 control-label">{{msg . "label.singular"}}</label>
 						<div class="col-sm-9">
 							<input type="text" class="form-control" id="inputGroupSingular" placeholder="{{msg . "placeholder.singular"}}" style="display: none"/>
@@ -152,7 +152,7 @@
 			</div>
 
 			<!-- Attribute help -->
-			<div id="attributeHelp" class="col-lg-3 bg-info">
+			<div id="attributeHelp" class="col-lg-3">
 			</div>
 			{{end}}
 		</div>

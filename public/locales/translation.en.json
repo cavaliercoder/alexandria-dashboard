@@ -1,11 +1,96 @@
 {
-	"label": {
-		"addchild": "Get babies",
-		"delete": "Kill it!"
-	},
-	"attribute": {
-		"new" : {
-			"name" : "New attribute"
-		}
-	}
+    "attribute": {
+        "new": {
+            "name": "New attribute"
+        }
+    },
+    "help": {
+        "att": {
+            "array": [
+                "<p>If selected, this attribute can store multiple values instead of a single value.</p>",
+                "<p>E.g.:</p><ul>",
+                "<li>A person have multiple <em>Email address</em> or <em>Spoken language</em> values</li>",
+                "<li>A computer may have multiple <em>Processor</em> or <em>Hard disk</em> values</li>",
+                "</ul>",
+                "<p>Options:</p><ul>",
+                "<li><p><strong>Minimum count</strong></p>",
+                "<p>The minimum number of values that must be included in a CI for this attribute.</p>",
+                "<p>If the minimum is zero or not specified, no limitation is enforced.</li>",
+                "<li><p><strong>Maximum count</strong></p>",
+                "<p>The maximum number of values that can be specified in a CI for this attribute.</p>",
+                "<p>If the maximum is zero or not specified, no limitation is enforced.</p></li>",
+                "</ul>"
+            ],
+            "required": [
+                "<p>All CIs of this type must have a valid value entered for this attribute.</p>"
+            ],
+            "type": [
+                "<p>Data type of the attribute's value.</p>",
+                "<p>This determines the type of information that can be stored in this attribute for CIs.</p>",
+                "<p>Options:</p><ul>",
+                "<li><p><strong>Plain text</strong></p>",
+                "<p>A string of text characters such as a title or short paragraph.</p></li>",
+                "<li><p><strong>Number</strong></p>",
+                "<p>A mathematical number, including integers, floating point numbers, imaginary numbers, etc.</p></li>",
+                "<li><p><strong>True/False</strong></p>",
+                "<p>A simple <em>boolean</em> or <em>bit</em> flag representing one of two values: true or false.</p></li>",
+                "<li><p><strong>Date/Time</strong></p>",
+                "<p>Represents a moment in time.</p></li>",
+                "<li><p><strong>Attribute group</strong></p>",
+                "<p>Allows for nesting a group of attributes together under a single parent attribute.</p></li>",
+                "</ul>"
+            ],
+            "name": [
+                "<p>The name of the attribute.<p>",
+                "<p>This name will be used to automatically generate the <em>System name</em> of the attribute.</p>",
+                "<p>E.g. <em>Person</em> or <em>Document</em></p>"
+            ],
+            "description": [
+                "<p>A short summary describing the attribute.</p>",
+                "<p>You may wish to detail:</p><ul>",
+                "<li>How the attribute data is sourced</li>",
+                "<li>Rules for using or updating the attribute</li>",
+                "<li>How the data should be interpretted</li>",
+                "<ul>"
+            ],
+            "string": [
+            	"<p>Plain text options:</p><ul>",
+                "<li><p><strong>Minimum length</strong></p>",
+                "<p>The minimum number of text characters that must be entered in a CI for this attribute.</p>",
+                "<p>If the minimum is zero or not specified, no minimum is enforced</p></li>",
+                "<li><p><strong>Maximum length</strong></p>",
+                "<p>The maximum number of text characters that can be entered in a CI for this attribute.</p>",
+                "<p>If the maximum is zero or not specified, no maximum is enforced</p></li>",
+            	"</ul>"
+            ],
+            "number": [
+            	"<p>Number options:</p><ul>",
+            	"<li><p><strong>Units</strong></p>",
+            	"<p>The unit of measure described by this attribute</p>",
+            	"<p>If specified, the units will be displayed as a suffix to the value of this attribute on all CIs</p>",
+                "<li><p><strong>Minimum value</strong></p>",
+                "<p>The minimum numeric value that must be entered in a CI for this attribute.</p>",
+                "<p>If the minimum is zero or not specified, no minimum is enforced</p></li>",
+                "<li><p><strong>Maximum value</strong></p>",
+                "<p>The maximum numeric value that can be entered in a CI for this attribute.</p>",
+                "<p>If the maximum is zero or not specified, no maximum is enforced</p></li>",
+            	"</ul>"
+            ],
+            "group": [
+            	"<p>Group options:</p><ul>",
+            	"<li><p><strong>Singular</strong></p>",
+            	"<p>The name given to an item that represents a singular of this attribute array.</p>",
+            	"<p>Defaults to the name of the attribute.</p>",
+            	"<p>E.g.:</p><ul>",
+            	"<li>For a <em>Processors</em> attribute, singular would be <em>Processor</em></li>",
+            	"<li>For a <em>Phone numbers</em> attribute, singular would be <em>Phone number</em></li>",
+            	"</ul></li>",
+            	"</ul>"
+            ]
+        }
+    },
+    "label": {
+        "addchild": "Get babies",
+        "delete": "Kill it!"
+    }
 }
