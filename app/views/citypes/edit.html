@@ -142,10 +142,12 @@
 					</div>
 
 					<!-- Group attribute editor controls -->
-					<div class="form-group" id="editGroup" data-help-key="att.group">
-						<label for="singular" class="col-sm-2 control-label">{{msg . "label.singular"}}</label>
-						<div class="col-sm-9">
-							<input type="text" class="form-control" id="inputGroupSingular" placeholder="{{msg . "placeholder.singular"}}" style="display: none"/>
+					<div id="editGroup" data-help-key="att.group">
+						<div class="form-group" id="editGroupSingular">
+							<label for="singular" class="col-sm-2 control-label">{{msg . "label.singular"}}</label>
+							<div class="col-sm-10">
+								<input type="text" class="form-control" id="inputGroupSingular" placeholder="{{msg . "placeholder.singular"}}" />
+							</div>
 						</div>
 					</div>
 				</form>

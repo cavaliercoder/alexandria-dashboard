@@ -291,7 +291,7 @@ function setAttribute(att) {
 			case "group":
 				if (att.isArray) {
 					inputGroupSingular.val(att.singular);
-					inputGroupSingular.show();
+					editGroupSingular.show();
 				}
 
 				break;
@@ -337,7 +337,7 @@ function showControlGroup(attType) {
 
 	// Reset group controls
 	editGroup.hide();
-	inputGroupSingular.hide();
+	editGroupSingular.hide();
 	inputGroupSingular.val('');	
 
 	switch(attType) {
@@ -485,6 +485,7 @@ $(document).ready(function() {
 	inputAttMaxCount = $('#inputAttMaxCount');
 
 	editGroup = $('#editGroup');
+	editGroupSingular = $('#editGroupSingular');
 	inputGroupSingular = $('#inputGroupSingular');
 
 	editString = $('#editString');
@@ -521,10 +522,9 @@ $(document).ready(function() {
 		// Special consideration for showing group controls
 		if(selectedAtt.type == "group") {
 			if(inputAttArray.is(':checked')) {
-				inputGroupSingular.show();
+				editGroupSingular.fadeIn();
 			} else {
-				inputGroupSingular.hide();
-				inputGroupSingular.val('');
+				editGroupSingular.fadeOut(function() { inputGroupSingular.val(''); });
 			}
 		}
 

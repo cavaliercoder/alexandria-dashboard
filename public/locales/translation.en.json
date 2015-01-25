@@ -82,7 +82,7 @@
             	"<p>The name given to an item that represents a singular of this attribute array.</p>",
             	"<p>Defaults to the name of the attribute.</p>",
             	"<p>E.g.:</p><ul>",
-            	"<li>For a <em>Processors</em> attribute, singular would be <em>Processor</em></li>",
+            	"<li>For a <em>People</em> attribute, singular would be <em>Person</em></li>",
             	"<li>For a <em>Phone numbers</em> attribute, singular would be <em>Phone number</em></li>",
             	"</ul></li>",
             	"</ul>"
