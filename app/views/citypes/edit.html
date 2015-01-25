@@ -8,6 +8,7 @@
 	var origCitype = {{rawjs .citypeJson}};
 </script>
 {{end}}
+
 {{append . "moreScripts" "js/citype.js"}}
 
 {{$cmdb := .cmdb}}
@@ -16,8 +17,8 @@
 <div class="row">
 	<div class="col-lg-12">
 		<ul class="nav nav-tabs">
-		  <li class="active"><a href="#tabType" data-toggle="tab">CI Type</a></li>
-		  <li><a href="#tabAttributes" data-toggle="tab">Attributes</a></li>
+		  <li class="active"><a href="#tabType" data-toggle="tab">{{msg . "label.citype"}}</a></li>
+		  <li><a href="#tabAttributes" data-toggle="tab">{{msg . "label.attributes"}}</a></li>
 		</ul>
 	</div>
 </div>
@@ -29,14 +30,14 @@
 				<!-- CI Type name -->
 				<form action="#" class="form-horizontal">
 					<div class="form-group">
-						<label for="name" class="col-sm-2 control-label">Name</label>
+						<label for="name" class="col-sm-2 control-label">{{msg . "label.name"}}</label>
 						<div class="col-sm-10">
-							<input type="text" class="form-control" id="typeName" name="name" value="{{.citype.Name}}" placeholder="CI type name" />
+							<input type="text" class="form-control" id="typeName" name="name" value="{{.citype.Name}}" placeholder="{{msg . "placeholder.citype.name"}}" />
 						</div>
 					</div>
 					<!-- CI Type description -->
 					<div class="form-group">
-						<label for="description" class="col-sm-2 control-label">Description</label>
+						<label for="description" class="col-sm-2 control-label">{{msg . "label.description"	}}</label>
 						<div class="col-sm-10">
 							<textarea id="typeDesc" name="description" class="form-control" rows="3">{{.citype.Description}}</textarea>
 						</div>
@@ -46,45 +47,45 @@
 		</div>
 
 		<!-- Attribute tab -->
-		<div class="tab-pane fade" id="tabAttributes">
+		<div class="tab-pane fade clearfix" id="tabAttributes">
 			<!-- Attribute list for current CI Type -->
 			{{if .citype}}
 			<div class="col-lg-3">
-				<span id="newatt" class="text-primary link pull-right"><i class="glyphicon glyphicon-plus"></i>&nbsp;New</span>
+				<span id="newatt" class="text-primary link pull-right"><i class="glyphicon glyphicon-plus"></i>&nbsp;{{msg . "label.new"}}</span>
 				<div class="clearfix"></div>
 				<ul id="attlist" class="list-unstyled">
 				</ul>
 			</div>
 			<!-- Attribute editor -->
-			<div class="col-lg-9" id="attributeEditor">
+			<div class="col-lg-6" id="attributeEditor">
 				<form action="#" class="form-horizontal">
 					<div class="form-group">
-						<label for="name" class="col-sm-2 control-label">Name</label>
+						<label for="name" class="col-sm-2 control-label">{{msg . "label.name"}}</label>
 						<div class="col-sm-10">
-							<input type="text" class="form-control" id="attName" name="name" placeholder="CI type name" />
+							<input type="text" class="form-control" id="attName" name="name" placeholder="{{msg . "placeholder.att.name"}}" />
 						</div>
 					</div>
 					<div class="form-group">
-						<label for="description" class="col-sm-2 control-label">Description</label>
+						<label for="description" class="col-sm-2 control-label">{{msg . "label.description"}}</label>
 						<div class="col-sm-10">
 							<textarea id="attDesc" name="description" class="form-control" rows="3"></textarea>
 						</div>
 					</div>
 					<div class="form-group">
-						<label for="type" class="col-sm-2 control-label">Type</label>
+						<label for="type" class="col-sm-2 control-label">{{msg . "label.type"}}</label>
 						<div class="col-sm-10">
 							<select name="type" id="attType" class="form-control">
-								<option value="string">Plain text</option>
-								<option value="number">Number</option>
-								<option value="boolean">True/False</option>
-								<option value="timestamp">Date/Time</option>
-								<option value="group">Attribute group</option>
+								<option value="string">{{msg . "label.plaintext"}}</option>
+								<option value="number">{{msg . "label.number"}}</option>
+								<option value="boolean">{{msg . "label.boolean"}}</option>
+								<option value="timestamp">{{msg . "label.datetime"}}</option>
+								<option value="group">{{msg . "label.attributegroup"}}</option>
 							</select>
 						</div>
 					</div>
 
 					<div class="form-group" >
-						<label for="required" class="col-sm-2 control-label">Required</label>
+						<label for="required" class="col-sm-2 control-label">{{msg . "label.required"}}</label>
 						<div class="col-sm-1">
 							<input type="checkbox" id="inputAttRequired" />
 						</div>
@@ -93,17 +94,17 @@
 					<!--  Array editor controls -->
 					<div id="editArray">
 						<div class="form-group">
-							<label for="array" class="col-sm-2 control-label">Array</label>
+							<label for="array" class="col-sm-2 control-label">{{msg . "label.array"}}</label>
 							<div class="col-sm-1">
 								<input type="checkbox" id="inputAttArray" />
 							</div>
-							<label for="minCount" class="col-sm-2 control-label">Min. Count</label>
+							<label for="minCount" class="col-sm-2 control-label">{{msg . "label.minimumcount"}}</label>
 							<div class="col-sm-2">
-								<input type="text" id="inputAttMinCount" class="form-control" placeholder="None" />
+								<input type="text" id="inputAttMinCount" class="form-control" placeholder="{{msg . "placeholder.none"}}" />
 							</div>
-							<label for="maxCount" class="col-sm-2 control-label">Max. Count</label>
+							<label for="maxCount" class="col-sm-2 control-label">{{msg . "label.maximumcount"}}</label>
 							<div class="col-sm-2">
-								<input type="text" id="inputAttMaxCount" class="form-control" placeholder="None" />
+								<input type="text" id="inputAttMaxCount" class="form-control" placeholder="{{msg . "placeholder.none"}}" />
 							</div>
 						</div>
 					</div>
@@ -111,13 +112,13 @@
 					<!-- String attribute editor controls -->
 					<div id="editString">
 						<div class="form-group">
-							<label for="minLength" class="col-sm-2 control-label">Min. Length</label>
+							<label for="minLength" class="col-sm-2 control-label">{{msg . "label.minimumlength"}}</label>
 							<div class="col-sm-4">
-								<input type="text" id="inputStringMinLength" class="form-control" placeholder="None" />
+								<input type="text" id="inputStringMinLength" class="form-control" placeholder="{{msg . "placeholder.none"}}" />
 							</div>
-							<label for="maxLength" class="col-sm-2 control-label">Max. Length</label>
+							<label for="maxLength" class="col-sm-2 control-label">{{msg . "label.maximumlength"}}</label>
 							<div class="col-sm-4">
-								<input type="text" id="inputStringMaxLength" class="form-control" placeholder="None" />
+								<input type="text" id="inputStringMaxLength" class="form-control" placeholder="{{msg . "placeholder.none"}}" />
 							</div>
 						</div>
 					</div>
@@ -125,29 +126,33 @@
 					<!-- Number attribute editor controls -->
 					<div id="editNumber">
 						<div class="form-group">
-							<label for="units" class="col-sm-2 control-label">Units</label>
+							<label for="units" class="col-sm-2 control-label">{{msg . "label.units"}}</label>
 							<div class="col-sm-2">
 								<input type="text" id="inputNumberUnits" class="form-control" />
 							</div>
-							<label for="minValue" class="col-sm-2 control-label">Minimum</label>
+							<label for="minValue" class="col-sm-2 control-label">{{msg . "label.minimum"}}</label>
 							<div class="col-sm-2">
-								<input type="text" id="inputNumberMinValue" class="form-control" placeholder="None" />
+								<input type="text" id="inputNumberMinValue" class="form-control" placeholder="{{msg . "placeholder.none"}}" />
 							</div>
-							<label for="maxValue" class="col-sm-2 control-label">Maximum</label>
+							<label for="maxValue" class="col-sm-2 control-label">{{msg . "label.maximum"}}</label>
 							<div class="col-sm-2">
-								<input type="text" id="inputNumberMaxValue" class="form-control" placeholder="None" />
+								<input type="text" id="inputNumberMaxValue" class="form-control" placeholder="{{msg . "placeholder.none"}}" />
 							</div>
 						</div>
 					</div>
 
 					<!-- Group attribute editor controls -->
 					<div class="form-group" id="editGroup">
-						<label for="singular" class="col-sm-2 control-label">Singular name</label>
+						<label for="singular" class="col-sm-2 control-label">{{msg . "label.singular"}}</label>
 						<div class="col-sm-9">
-							<input type="text" class="form-control" id="inputGroupSingular" placeholder="Singular name" style="display: none"/>
+							<input type="text" class="form-control" id="inputGroupSingular" placeholder="{{msg . "placeholder.singular"}}" style="display: none"/>
 						</div>
 					</div>
 				</form>
+			</div>
+
+			<!-- Attribute help -->
+			<div id="attributeHelp" class="col-lg-3 bg-info">
 			</div>
 			{{end}}
 		</div>
@@ -158,42 +163,7 @@
 		<form class="invisible" method="POST" id="submitForm">
 			<input type="hidden" name="data" id="submitData" />
 		</form>
-		<button class="btn btn-primary pull-right" id="save">Save</button>
+		<button class="btn btn-primary pull-right" id="save">{{msg . "label.save"}}</button>
 	</div>
 </div>
-
-<!-- Add CI Type modal -->
-<div class="modal fade modal-add-ci-type" tabindex="-1" role="dialog" aria-hidden="true">
-  	<div class="modal-dialog ">
-	    <div class="modal-content">
-			<div class="modal-header">
-        		<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-				<h4 class="modal-title">New CI Type</h4>
-			</div>
-			<div class="modal-body">
-				<form method="POST" action="/cmdb/{{.cmdb.ShortName}}/citypes" class="form-horizontal">
-					<div class="form-group">
-						<label for="name" class="col-sm-2 control-label">Name</label>
-						<div class="col-sm-10">
-							<input type="text" class="form-control" id="name" name="name" placeholder="CI type name" />
-						</div>
-					</div>
-					<div class="form-group">
-						<label for="description" class="col-sm-2 control-label">Description</label>
-						<div class="col-sm-10">
-							<textarea id="description" name="description" class="form-control" rows="3"></textarea>
-						</div>
-					</div>
-					<div class="form-group">
-						<div class="col-sm-12">
-							<button type="button" class="btn btn-default pull-right" data-dismiss="modal" aria-label="Close">Cancel</button>
-							<input type="submit" value="Add" class="btn btn-primary pull-right"></input>
-						</div>
-					</div>
-				</form>
-			</div>
-		</div>
-    </div>
-</div>
-
 {{template "footer.html" .}}

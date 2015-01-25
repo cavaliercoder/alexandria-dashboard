@@ -1,0 +1,4 @@
+placeholder.att.name=%(label.attribute)s name
+placeholder.citype.name=%(label.citype)s name
+placeholder.none=None
+placeholder.singular=Singular name
