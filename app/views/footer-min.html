@@ -13,6 +13,18 @@
     <script src="public/js/plugins/morris/morris-data.js"></script>
 	-->
 
+    <!-- i18next -->
+    <script src="/public/js/i18next-1.7.7.min.js"></script>
+    <script type="text/javascript">
+        var option = { 
+            lng: '{{.currentLocale}}',
+            resGetPath: '/public/locales/__ns__.__lng__.json',
+            lowerCaseLng: true
+        };
+     
+        i18n.init(option);
+    </script>
+
     {{range .moreScripts}}
       <script src="/public/{{.}}" type="text/javascript" charset="utf-8"></script>
     {{end}}

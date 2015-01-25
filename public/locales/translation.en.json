@@ -1,0 +1,11 @@
+{
+	"label": {
+		"addchild": "Get babies",
+		"delete": "Kill it!"
+	},
+	"attribute": {
+		"new" : {
+			"name" : "New attribute"
+		}
+	}
+}

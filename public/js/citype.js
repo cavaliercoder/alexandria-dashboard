@@ -1,7 +1,11 @@
 var attLookup = {};
 var selectedAtt = null;
 
+var navHeader = null;
+var attributeRow = null;
 var attributeEditor = null;
+var attributeList = null;
+var attributeHelp = null;
 
 var inputTypeName = null;
 var inputTypeDescription = null;
@@ -85,7 +89,7 @@ function addAttribute(parent) {
 	var atts = parent ? parent.children : citype.attributes;
 
 	// Find next available 'New Attribute' name
-	var name = 'New Attribute';
+	var name = i18n.t('attribute.new.name');
 	for (i = 1; i < 1024; i++) {
 		var test = name;
 		if (i > 1) test += ' ' + i;
@@ -151,7 +155,7 @@ function buildAttributeListItem(att) {
 		controls = $('<span class="li-controls"></span>').appendTo(container);
 
 		// Delete button
-		btnDelete = $('<button class="close li-delete" data-toggle="tooltip" title="Delete">&times;</button>')
+		btnDelete = $('<button class="close li-delete" data-toggle="tooltip" title="' + i18n.t("label.delete") + '">&times;</button>')
 			.appendTo(controls);
 		btnDelete.click(function() { removeAttribute(att); return false; });
 
@@ -208,7 +212,7 @@ function buildAttributeListItem(att) {
 
 		// Add/remove 'add child' button
 		if (! btnAdd.length) {
-			btnAdd = $('<button class="btn li-add" data-toggle="tooltip" data-original-title="Add child">&plus;</button>')
+			btnAdd = $('<button class="btn li-add" data-toggle="tooltip" data-original-title="' + i18n.t("label.addchild") + '">&plus;</button>')
 				.appendTo($('span.li-controls', att._li));
 			btnAdd.click(function() { addAttribute(att); return false; });
 		}
@@ -461,7 +465,11 @@ $(document).ready(function() {
 	ulAtts = $('#attlist');
 	liNewAtt = $('#newatt');
 
+	navHeader = $('.navbar-header');
+	attributeList = $('#attributeList');
 	attributeEditor = $('#attributeEditor');
+	attributeHelp = $('#attributeHelp');
+	attributeRow = attributeEditor.closest('div.row');
 
 	inputTypeName = $('#typeName');
 	inputTypeDescription = $('#typeDesc');
