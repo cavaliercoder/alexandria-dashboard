@@ -7,20 +7,16 @@ Alexandria CMDB is an open source configuration management database written in [
 This project is in infancy and not ready for deployment. It aims to achieve the following:
 
 * Fast, lightweight and low configuration overhead
-
 * Intuitive and responsive frontend
-
 * Automated data sourcing, transformation and validation
-
 * Vertical and horizontal scalability
-
 * High availability
-
+* Message queue integration
 * Comprehensive RESTful API
-
 * Multitenanted, cloud or on-premise
+* ITIL friendly
 
-* ITIL compliant
+For more information, see the [Alexandria CMDB docs](http://cavaliercoder.github.io/alexandria-docs/).
 
 ## License
 
